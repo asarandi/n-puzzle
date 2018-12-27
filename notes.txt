@@ -1,0 +1,5 @@
+
+e1z4r6p21% ./solver.py sample4_70.txt
+open set count 68819
+closed set count 32871
+
