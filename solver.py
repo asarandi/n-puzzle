@@ -8,8 +8,8 @@ from tkinter import *
 #from operator import itemgetter
 from heapq import heappush, heappop
 
-GUI_FONT = ('Arial', 48)
-GUI_BOX_SIZE = 120
+GUI_FONT = ('Arial', 36)
+GUI_BOX_SIZE = 100
 GUI_BOX_SPACING = 10
 GUI_BOX_BORDER_WIDTH = 3
 GUI_FRAME_INDEX = 0
@@ -248,6 +248,46 @@ class Node:
         self.h = NODE_MAX_SCORE
         self.n = -1
 
+
+def solved_zero_first(size):
+    return tuple([x for x in range(size*size)])
+
+def solved_zero_last(size):
+    lst = [x for x in range(1,size*size)]
+    return tuple(lst.append(0))
+
+def solved_snail(size):
+    lst = [[0 for x in range(size)] for y in range(size)]
+    moves = [(0,1),(1,0),(0,-1),(-1,0)]
+    row = 0
+    col = 0
+    i = 1
+    final = size * size
+    size -= 1
+    done = False
+    while not done and size > 0:
+        for move in moves:
+            if done:
+                break
+            for _ in range(size):
+                lst[row][col] = i
+                row += move[0]
+                col += move[1]
+                i += 1
+                if i == final:
+                    done = True
+                    break
+        row += 1
+        col += 1
+        size -= 2
+
+    res = []
+    for row in lst:
+        for i in row:
+            res.append(i)
+    return tuple(res)
+
+
 fn = 'input0.txt'
 if len(sys.argv) > 1:
     fn = sys.argv[1]
@@ -269,6 +309,8 @@ data = tuple(flat)
 print('initial state', data)
 original = deepcopy(data)
 
+
+'''
 #solved = [int(x) for x in range(size*size)]
 #solved[size*size-1] = 0
 solved_3 = [1,2,3,8,0,4,7,6,5]
@@ -279,6 +321,8 @@ elif size == 4: solved = solved_4
 elif size == 5: solved = solved_5
 else: sys.exit(0)
 solved = tuple(solved)
+'''
+solved = solved_snail(size)
 print('final state', solved)
 
 root = Node(data)
