@@ -8,8 +8,10 @@ from tkinter import *
 #from operator import itemgetter
 from heapq import heappush, heappop
 
-
-GUI_BOX_SIZE = 100
+GUI_FONT = ('Arial', 48)
+GUI_BOX_SIZE = 120
+GUI_BOX_SPACING = 10
+GUI_BOX_BORDER_WIDTH = 3
 GUI_FRAME_INDEX = 0
 GUI_DELAY = 500
 GUI_COLOR_1 = '#f5f5dc'
@@ -31,14 +33,23 @@ def gui_replay(master, canvas, item_matrix, solution, puzzle_size):
     for y in range(puzzle_size):
         for x in range(puzzle_size):
             n = numbers[y+puzzle_size*x]
-            if n == 0:
-                canvas.itemconfig(item_matrix[y][x][0], fill=GUI_COLOR_3, outline=GUI_OUTLINE_1, width=1)
-            elif n == color_this:
-                canvas.itemconfig(item_matrix[y][x][0], fill=GUI_COLOR_2, outline=GUI_OUTLINE_1, width=1)
+            BORDER_COLOR = "#000000"
+            if n == solution[-1].data[y+puzzle_size*x]:
+                BORDER_COLOR = "#00bb00"    #if number is in place, show green cell border
             else:
-                canvas.itemconfig(item_matrix[y][x][0], fill=GUI_COLOR_1, outline=GUI_OUTLINE_1, width=1)
+                BORDER_COLOR = "#bb0000"    #else red cell border
 
-            canvas.itemconfig(item_matrix[y][x][1], text=str(n))
+            if n == 0:
+                canvas.itemconfig(item_matrix[y][x][0],  outline=GUI_COLOR_1, width=GUI_BOX_BORDER_WIDTH)
+            elif n == color_this:
+                canvas.itemconfig(item_matrix[y][x][0],  outline=BORDER_COLOR, width=GUI_BOX_BORDER_WIDTH)
+            else:
+                canvas.itemconfig(item_matrix[y][x][0],  outline=BORDER_COLOR, width=GUI_BOX_BORDER_WIDTH)
+
+            s = str(n)
+            if not n:
+                s = ''
+            canvas.itemconfig(item_matrix[y][x][1], text=s)
 
     GUI_FRAME_INDEX += 1
     if GUI_FRAME_INDEX >= len(solution):
@@ -55,22 +66,19 @@ def gui_close(event):
 def gui_item_matrix(canvas, puzzle_size):
     item_matrix = [[[None, None] for x in range(puzzle_size)] for y in range(puzzle_size)]
     for y in range(puzzle_size):
-        for x in range(puzzle_size):            
-            item_matrix[y][x][0] = canvas.create_rectangle(
-                    y * GUI_BOX_SIZE,
-                    x * GUI_BOX_SIZE,
-                    y * GUI_BOX_SIZE + GUI_BOX_SIZE,
-                    x * GUI_BOX_SIZE + GUI_BOX_SIZE,
-                    fill = GUI_COLOR_1,
-                    outline = GUI_OUTLINE_1,
-                    width = 1
-                    )
+        for x in range(puzzle_size):
+            y0 = y * GUI_BOX_SIZE + GUI_BOX_SPACING
+            x0 = x * GUI_BOX_SIZE + GUI_BOX_SPACING
+
+            item_matrix[y][x][0] = canvas.create_rectangle(y0,x0,y0+GUI_BOX_SIZE-GUI_BOX_SPACING,x0+GUI_BOX_SIZE-GUI_BOX_SPACING,
+                    dash=(5,4,5,3),
+                    fill=GUI_COLOR_1)
             item_matrix[y][x][1] = canvas.create_text(
                     (
-                        (y * GUI_BOX_SIZE) + GUI_BOX_SIZE / 2,
-                        (x * GUI_BOX_SIZE) + GUI_BOX_SIZE / 2
+                        y0 + (GUI_BOX_SIZE - GUI_BOX_SPACING) / 2,
+                        x0 + (GUI_BOX_SIZE - GUI_BOX_SPACING) / 2
                         ),
-                    font=('Arial', 32),
+                    font=GUI_FONT,
                     text=''
                     )
 
@@ -78,9 +86,9 @@ def gui_item_matrix(canvas, puzzle_size):
 
 def visualizer(solution, puzzle_size):
     master = Tk()
-    canvas_width = GUI_BOX_SIZE * puzzle_size
-    canvas_height = GUI_BOX_SIZE * puzzle_size
-    canvas = Canvas(master, width=canvas_width+1, height=canvas_height+1, borderwidth=0, highlightthickness=0)
+    canvas_width = (GUI_BOX_SIZE * puzzle_size) + GUI_BOX_SPACING
+    canvas_height = (GUI_BOX_SIZE * puzzle_size) + GUI_BOX_SPACING
+    canvas = Canvas(master, width=canvas_width+1, height=canvas_height+1, bg=GUI_COLOR_1, borderwidth=0, highlightthickness=0)
     canvas.pack()
     item_matrix = gui_item_matrix(canvas, puzzle_size)
     os.system('''/usr/bin/osascript -e 'tell app "Finder" to set frontmost of process "Python" to true' ''')
@@ -311,7 +319,7 @@ while opened and not success:
         for s in steps:
             print(s.data, 'g value', s.g, 'h value', s.h, 'f value', s.f, 'n value', s.n)
         print('current open set', len(open_set))
-        print('total open set count', open_count)
+#        print('total open set count', open_count)
         print('closed set count', closed_count)
         visualizer(steps, size)
         break
