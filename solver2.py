@@ -7,8 +7,6 @@ from time import sleep
 from tkinter import *
 #from operator import itemgetter
 from heapq import heappush, heappop, heapify
-from math import sqrt
-import argparse
 
 GUI_FONT = ('Arial', 36)
 GUI_BOX_SIZE = 100
@@ -100,6 +98,8 @@ def visualizer(solution, puzzle_size):
     master.after(0, gui_replay, master, canvas, item_matrix, solution, puzzle_size)
     master.mainloop()
 
+
+
 def error_exit(msg):
     print(msg)
     sys.exit(1)  
@@ -137,10 +137,12 @@ def clone_and_swap(data,y0,y1):
 def possible_moves(data, size):
     res = []
     y = data.index(0)
+#    for y in range(len(data)):
+#            if data[y] == 0:
     if y % size > 0:
         left = clone_and_swap(data,y,y-1)
         res.append(left)
-    if y % size + 1 < size:
+    if (y % size) + 1 < size:
         right = clone_and_swap(data,y,y+1)
         res.append(right)
     if y - size >= 0:
@@ -151,12 +153,39 @@ def possible_moves(data, size):
         res.append(down)
     return res
                 
+
+def seen_before(move, node_lst):
+    for node in node_lst:
+        if node.data == move:
+            return True
+    return False
+
+
 def heuristic_tiles_out_of_place(candidate, solved):
     res = 0
     for y in range(len(solved)):
             if solved[y] != candidate[y]:
                 res += 1
     return res
+
+
+def make_2d_array(tpl, size):
+    lst = list(tpl)
+    res = []
+    for y in range(size):
+        row = []
+        for x in range(size):
+            row.append(tpl[y*size+x])
+        res.append(row)
+    return res
+
+
+def get_yx_coordinates(lst2d, size, itm):
+    for y in range(size):
+        for x in range(size):
+            if lst2d[y][x] == itm:
+                return (y,x)
+    return None
 
 #
 # https://lyfat.wordpress.com/2012/05/22/euclidean-vs-chebyshev-vs-manhattan-distance/
@@ -171,18 +200,44 @@ def manhattan_distance(y0,x0,y1,x1):
 def euclidean_distance(y0,x0,y1,x1):
     y = y0 - y1
     x = x0 - x1
-    return sqrt((y*y) + (x*x))
+    return (y*y) + (x*x)
+
 
 def heuristic(candidate, solved, size):
     res = 0
-    for i in range(size*size):
-        if candidate[i] != 0 and candidate[i] != solved[i]:
-            ci = candidate.index(solved[i])
-            res += manhattan_distance(i // size, i % size, ci // size, ci % size)
-#            res += euclidean_distance(i // size, i % size, ci // size, ci % size)
+    candidate = make_2d_array(candidate, size)
+    solved = make_2d_array(solved, size)
+    for y in range(size):
+        for x in range(size):
+            if solved[y][x] != candidate[y][x]:
+                y1, x1 = get_yx_coordinates(candidate, size, solved[y][x])
+                res += manhattan_distance(y,x,y1,x1)
+#                res += euclidean_distance(y,x,y1,x1)
+#                res += chebyshev_distance(y,x,y1,x1)
     return res
 
+
+
 NODE_MAX_SCORE = 999999
+def select_by_f_score(lst):
+#    lst = sorted(lst, key=lambda x: x.n, reverse=True)
+    lst = sorted(lst, key=lambda x: x.f)
+    return lst[0]
+
+#    res = None
+#    res_f = NODE_MAX_SCORE 
+#    for e in lst:
+#        if e.f < res_f:
+#            res = e
+#            res_f = e.f
+#    return res
+
+
+def find_node_by_data(data, nodes):
+    for node in nodes:
+        if node.data == data:
+            return node
+    return None
 
 class Node:
     def __init__(self, data):
@@ -199,8 +254,7 @@ def solved_zero_first(size):
 
 def solved_zero_last(size):
     lst = [x for x in range(1,size*size)]
-    lst.append(0)
-    return tuple(lst)
+    return tuple(lst.append(0))
 
 def solved_snail(size):
     lst = [[0 for x in range(size)] for y in range(size)]
@@ -233,13 +287,6 @@ def solved_snail(size):
             res.append(i)
     return tuple(res)
 
-parser = argparse.ArgumentParser(description='n-puzzle @ 42')
-parser.add_argument('-f', '--final-state', type=int, help='solved state of the puzzle')
-parser.add_argument('-g', '--greedy', help='greedy search, f(g) = 0')
-parser.add_argument('-u', '--uniform', help='uniform-cost search, f(h) = 0')
-parser.add_argument('-h', '--heuristic', choices=['manhattan', 'euclidean', 'toop'], help='heuristic function')
-
-
 
 fn = 'input0.txt'
 if len(sys.argv) > 1:
@@ -259,75 +306,110 @@ for line in data:
     for itm in line:
         flat.append(itm)
 data = tuple(flat)
-solved = solved_snail(size)
-#solved = solved_zero_last(size)
-
 print('initial state', data)
+original = deepcopy(data)
+
+
+'''
+#solved = [int(x) for x in range(size*size)]
+#solved[size*size-1] = 0
+solved_3 = [1,2,3,8,0,4,7,6,5]
+solved_4 = [1,2,3,4,12,13,14,5,11,0,15,6,10,9,8,7]
+solved_5 = [1,2,3,4,5,16,17,18,19,6,15,24,0,20,7,14,23,22,21,8,13,12,11,10,9]
+if size == 3: solved = solved_3
+elif size == 4: solved = solved_4
+elif size == 5: solved = solved_5
+else: sys.exit(0)
+solved = tuple(solved)
+'''
+solved = solved_snail(size)
 print('final state', solved)
 
 root = Node(data)
 root.f = 0
 root.g = 0
 root.h = heuristic(root.data, solved, size)
-unique_id = 0
-root.n = unique_id
+root.n = 1
 opened = []
 open_set = {}
+
 heappush(opened, (root.f, root.n, root))
+
+#opened.append(root)
+
 open_set[root.data] = root
 closed_set = {}
 success = False
 
-evaluated = 0
-rediscovered = 0
-while opened and not success:
-    f_score, node_id, e = heappop(opened)
-    if e.data not in open_set:
-        continue
+node_count = 1
+closed_count = 0
 
-    evaluated += 1
+magic = (5, 4, 1, 12, 3, 2, 13, 14, 0, 10, 15, 6, 11, 7, 9, 8)
+
+while opened and not success:
+#    print(opened)
+    f_score, n_score, e = heappop(opened) #select_by_f_score(opened)
+    try:
+        del open_set[e.data]
+    except:
+        print('exception',e.data)
+        for keys in open_set:
+            print('openset', keys)
+        print()
+        for keys in closed_set:
+            print('closedset', keys)
+        print()
+        sys.exit(0)
+
+
     if e.data == solved:
         success = True
+        print('success')
         steps = []
+        print('current g value', e.g)
         while True:
             steps.append(e)
             if not e.parent:
                 break
             e = e.parent
         steps = list(reversed(steps))
-        print('success')
-        print('current g value', steps[-1].g)
         print('length of solution', len(steps))
         for s in steps:
             print(s.data, 'g value', s.g, 'h value', s.h, 'f value', s.f, 'n value', s.n)
         print('current open set', len(open_set))
-        print('current queue size', len(opened))
+#        print('total open set count', open_count)
         print('closed set count', len(closed_set))
-        print('nodes evaluated', evaluated)
-        print('rediscovered nodes', rediscovered)
+#        visualizer(steps, size)
         break
     else:
 
-        del open_set[e.data]
         closed_set[e.data] = e
+        closed_count += 1
         moves = possible_moves(e.data, size)
-        tentative_g = e.g + 1
-
         for m in moves:
-            if m in closed_set:
+            tentative_g = e.g + 1
+            if m in closed_set:             #node exists in closed set
                 continue
-            if m in open_set:
-                if tentative_g >= open_set[m].g:
+                n = closed_set[m]
+                if tentative_g >= n.g:
                     continue
-                n = open_set[m]
-                rediscovered += 1
-            else:
-                n = Node(m)
                 open_set[m] = n
-                n.h = heuristic(m, solved, size)
-            unique_id += 1
-            n.n = unique_id
+                del closed_set[m]
+                closed_count -= 1
+            elif m in open_set:             #node exists in open set
+                n = open_set[m]
+                if tentative_g >= n.g:
+                    continue
+                opened.remove((n.f, n.n, n))
+                heapify(opened)
+            else:
+                n = Node(m)                 # create new node
+                node_count += 1
+                n.n = node_count
+                n.h = heuristic(n.data, solved, size)
+                open_set[m] = n             # and put it in open set
+
             n.parent = e
-            n.g = tentative_g
+            n.g = tentative_g         
             n.f = n.g + n.h
             heappush(opened, (n.f, n.n, n))
