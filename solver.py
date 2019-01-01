@@ -238,6 +238,8 @@ def heuristic_chebyshev(candidate, solved, size):       #not admissible
 
 
 '''
+# https://cse.sc.edu/~mgv/csce580sp15/gradPres/HanssonMayerYung1992.pdf
+# https://stackoverflow.com/questions/43965229/linear-conflict-violating-admissibility-and-driving-me-insane
 
 def is_correct_row(idx, candidate, solved, size):
     if candidate[idx] == solved[idx]:
@@ -257,6 +259,7 @@ def is_correct_column(idx, candidate, solved, size):
 
 def linear_conflict(candidate, solved, size):
     res = 0
+    PENALTY = 1
     for i in range(size * size):
         if is_correct_row(i, candidate, solved, size):
             r = i // size
@@ -265,24 +268,25 @@ def linear_conflict(candidate, solved, size):
                     if is_correct_row(j, candidate, solved, size):
                         if j > i:
                             if solved.index(candidate[j]) < solved.index(candidate[i]):
-                                res += 2
+                                res += PENALTY
                         elif i > j:
                             if solved.index(candidate[i]) < solved.index(candidate[j]):
-                                res += 2
-    '''                           
+                                res += PENALTY
+                           
     for i in range(size * size):
         if is_correct_column(i, candidate, solved, size):
             r = i % size
-            for j in range(r, r+size):
+            for j in range(r, r+size*size, size):
                 if j != i:
-                    if is_correct_row(j, candidate, solved, size):
+                    if is_correct_column(j, candidate, solved, size):
                         if j > i:
                             if solved.index(candidate[j]) < solved.index(candidate[i]):
-                                res += 2
+                                res += PENALTY
                         elif i > j:
                             if solved.index(candidate[i]) < solved.index(candidate[j]):
-                                res += 2
-                                '''
+                                res += PENALTY
+
+    res += heuristic_manhattan(candidate, solved, size)                            
     return res
                                
 
@@ -370,7 +374,8 @@ HEURISTICS = {
         'chebyshev': heuristic_chebyshev,
         'manhattan': heuristic_manhattan,
         'euclidean': heuristic_euclidean,
-        'euclidean2': heuristic_euclidean2
+        'euclidean2': heuristic_euclidean2,
+        'conflict': linear_conflict
 
         }
 
