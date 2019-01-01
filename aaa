@@ -1,0 +1,26 @@
+inversions 39
+initial state (12, 1, 2, 4, 11, 14, 3, 5, 8, 0, 15, 6, 10, 13, 9, 7)
+final state (1, 2, 3, 4, 12, 13, 14, 5, 11, 0, 15, 6, 10, 9, 8, 7)
+success
+current g value 14
+length of solution 15
+(12, 1, 2, 4, 11, 14, 3, 5, 8, 0, 15, 6, 10, 13, 9, 7) g value 0 h value 0 f value 999999 n value 0
+(12, 1, 2, 4, 11, 14, 3, 5, 0, 8, 15, 6, 10, 13, 9, 7) g value 1 h value 0 f value 1 n value 1
+(12, 1, 2, 4, 0, 14, 3, 5, 11, 8, 15, 6, 10, 13, 9, 7) g value 2 h value 0 f value 2 n value 5
+(0, 1, 2, 4, 12, 14, 3, 5, 11, 8, 15, 6, 10, 13, 9, 7) g value 3 h value 0 f value 3 n value 16
+(1, 0, 2, 4, 12, 14, 3, 5, 11, 8, 15, 6, 10, 13, 9, 7) g value 4 h value 0 f value 4 n value 38
+(1, 2, 0, 4, 12, 14, 3, 5, 11, 8, 15, 6, 10, 13, 9, 7) g value 5 h value 0 f value 5 n value 81
+(1, 2, 3, 4, 12, 14, 0, 5, 11, 8, 15, 6, 10, 13, 9, 7) g value 6 h value 0 f value 6 n value 171
+(1, 2, 3, 4, 12, 14, 15, 5, 11, 8, 0, 6, 10, 13, 9, 7) g value 7 h value 0 f value 7 n value 361
+(1, 2, 3, 4, 12, 14, 15, 5, 11, 0, 8, 6, 10, 13, 9, 7) g value 8 h value 0 f value 8 n value 768
+(1, 2, 3, 4, 12, 14, 15, 5, 11, 13, 8, 6, 10, 0, 9, 7) g value 9 h value 0 f value 9 n value 1607
+(1, 2, 3, 4, 12, 14, 15, 5, 11, 13, 8, 6, 10, 9, 0, 7) g value 10 h value 0 f value 10 n value 3316
+(1, 2, 3, 4, 12, 14, 15, 5, 11, 13, 0, 6, 10, 9, 8, 7) g value 11 h value 0 f value 11 n value 6710
+(1, 2, 3, 4, 12, 14, 0, 5, 11, 13, 15, 6, 10, 9, 8, 7) g value 12 h value 0 f value 12 n value 13556
+(1, 2, 3, 4, 12, 0, 14, 5, 11, 13, 15, 6, 10, 9, 8, 7) g value 13 h value 0 f value 13 n value 27144
+(1, 2, 3, 4, 12, 13, 14, 5, 11, 0, 15, 6, 10, 9, 8, 7) g value 14 h value 0 f value 14 n value 54194
+current open set 53086
+current queue size 53085
+closed set count 54194
+nodes evaluated 54195
+rediscovered nodes 0

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/nfs/2016/a/asarandi/.bin/pypy3
 
 import sys
 import os
@@ -42,11 +42,11 @@ def gui_replay(master, canvas, item_matrix, solution, puzzle_size):
                 BORDER_COLOR = "#bb0000"    #else red cell border
 
             if n == 0:
-                canvas.itemconfig(item_matrix[y][x][0],  outline=GUI_COLOR_1, width=GUI_BOX_BORDER_WIDTH)
+                canvas.itemconfig(item_matrix[y][x][0],  fill=GUI_COLOR_2, outline=GUI_COLOR_2, width=GUI_BOX_BORDER_WIDTH)
             elif n == color_this:
-                canvas.itemconfig(item_matrix[y][x][0],  outline=BORDER_COLOR, width=GUI_BOX_BORDER_WIDTH)
+                canvas.itemconfig(item_matrix[y][x][0],  fill=GUI_COLOR_1, outline=BORDER_COLOR, width=GUI_BOX_BORDER_WIDTH)
             else:
-                canvas.itemconfig(item_matrix[y][x][0],  outline=BORDER_COLOR, width=GUI_BOX_BORDER_WIDTH)
+                canvas.itemconfig(item_matrix[y][x][0],  fill=GUI_COLOR_1, outline=BORDER_COLOR, width=GUI_BOX_BORDER_WIDTH)
 
             s = str(n)
             if not n:
@@ -90,10 +90,10 @@ def visualizer(solution, puzzle_size):
     master = Tk()
     canvas_width = (GUI_BOX_SIZE * puzzle_size) + GUI_BOX_SPACING
     canvas_height = (GUI_BOX_SIZE * puzzle_size) + GUI_BOX_SPACING
-    canvas = Canvas(master, width=canvas_width+1, height=canvas_height+1, bg=GUI_COLOR_1, borderwidth=0, highlightthickness=0)
+    canvas = Canvas(master, width=canvas_width+1, height=canvas_height+1, bg=GUI_COLOR_2, borderwidth=0, highlightthickness=0)
     canvas.pack()
     item_matrix = gui_item_matrix(canvas, puzzle_size)
-    os.system('''/usr/bin/osascript -e 'tell app "Finder" to set frontmost of process "Python" to true' ''')
+    os.system('''/usr/bin/osascript -e 'tell app "Finder" to set frontmost of process "pypy3" to true' ''')
     master.bind('<Escape>', gui_close)
     master.bind('<Q>', gui_close)
     master.bind('<q>', gui_close)
@@ -125,14 +125,12 @@ def validate_size(data):
         error_exit('invalid input')
     return size
 
-
 def clone_and_swap(data,y0,y1):
     clone = deepcopy(list(data))
     tmp = clone[y0]
     clone[y0] = clone[y1]
     clone[y1] = tmp
     return tuple(clone)
-
 
 def possible_moves(data, size):
     res = []
@@ -151,36 +149,142 @@ def possible_moves(data, size):
         res.append(down)
     return res
                 
-def heuristic_tiles_out_of_place(candidate, solved):
-    res = 0
-    for y in range(len(solved)):
-            if solved[y] != candidate[y]:
-                res += 1
-    return res
-
 #
 # https://lyfat.wordpress.com/2012/05/22/euclidean-vs-chebyshev-vs-manhattan-distance/
 #
 
-def chebyshev_distance(y0,x0,y1,x1):
-    return max(abs(y0-y1), abs(x0-x1))
-
-def manhattan_distance(y0,x0,y1,x1):
-    return abs(y0-y1) + abs(x0-x1)
-
-def euclidean_distance(y0,x0,y1,x1):
-    y = y0 - y1
-    x = x0 - x1
-    return sqrt((y*y) + (x*x))
-
-def heuristic(candidate, solved, size):
+def heuristic_hamming(candidate, solved, size): #aka tiles out of place
     res = 0
     for i in range(size*size):
         if candidate[i] != 0 and candidate[i] != solved[i]:
-            ci = candidate.index(solved[i])
-            res += manhattan_distance(i // size, i % size, ci // size, ci % size)
-#            res += euclidean_distance(i // size, i % size, ci // size, ci % size)
+            res += 1
     return res
+
+
+def heuristic_manhattan(candidate, solved, size):
+    res = 0
+    for i in range(size*size):
+        if candidate[i] != 0 and candidate[i] != solved[i]:
+            ci = solved.index(candidate[i])
+            y = (i // size) - (ci // size)
+            x = (i % size) - (ci % size)
+            res += abs(y) + abs(x)
+    return res
+
+def heuristic_euclidean(candidate, solved, size):
+    res = 0
+    for i in range(size*size):
+        if candidate[i] != 0 and candidate[i] != solved[i]:
+            ci = solved.index(candidate[i])
+            y = (i // size) - (ci // size)
+            x = (i % size) - (ci % size)
+            res += sqrt((y*y) + (x*x))
+    return res
+
+def heuristic_euclidean2(candidate, solved, size):      #not admissible
+    res = 0
+    for i in range(size*size):
+        if candidate[i] != 0 and candidate[i] != solved[i]:
+            ci = solved.index(candidate[i])
+            y = (i // size) - (ci // size)
+            x = (i % size) - (ci % size)
+            res += (y*y) + (x*x)
+    return res
+
+def heuristic_chebyshev(candidate, solved, size):       #not admissible
+    res = 0
+    for i in range(size*size):
+        if candidate[i] != 0 and candidate[i] != solved[i]:
+            ci = solved.index(candidate[i])
+            y = (i // size) - (ci // size)
+            x = (i % size) - (ci % size)
+            res += max(abs(y), abs(x))
+    return res
+
+
+
+
+'''
+- 3 - 1
+- - - -
+
+- - 3 1
+- - - -
+
+- - 3 -
+- - - 1
+
+- - 3 -
+- - 1 -
+
+- - 3 -  
+- 1 - -
+
+- 1 3 -
+- - - -
+
+- 1 - 3
+- - - -
+
+
+
+01 02 03 04
+12 13 14 05
+11 -- 15 06
+10 09 08 07
+
+-- 14 -- 12
+
+
+
+'''
+
+def is_correct_row(idx, candidate, solved, size):
+    if candidate[idx] == solved[idx]:
+        return True
+    si = solved.index(candidate[idx])
+    if si // size == idx // size:
+        return True
+    return False
+
+def is_correct_column(idx, candidate, solved, size):
+    if candidate[idx] == solved[idx]:
+        return True
+    si = solved.index(candidate[idx])
+    if si % size == idx % size:
+        return True
+    return False
+
+def linear_conflict(candidate, solved, size):
+    res = 0
+    for i in range(size * size):
+        if is_correct_row(i, candidate, solved, size):
+            r = i // size
+            for j in range(r, r+size):
+                if j != i:
+                    if is_correct_row(j, candidate, solved, size):
+                        if j > i:
+                            if solved.index(candidate[j]) < solved.index(candidate[i]):
+                                res += 2
+                        elif i > j:
+                            if solved.index(candidate[i]) < solved.index(candidate[j]):
+                                res += 2
+    '''                           
+    for i in range(size * size):
+        if is_correct_column(i, candidate, solved, size):
+            r = i % size
+            for j in range(r, r+size):
+                if j != i:
+                    if is_correct_row(j, candidate, solved, size):
+                        if j > i:
+                            if solved.index(candidate[j]) < solved.index(candidate[i]):
+                                res += 2
+                        elif i > j:
+                            if solved.index(candidate[i]) < solved.index(candidate[j]):
+                                res += 2
+                                '''
+    return res
+                               
 
 NODE_MAX_SCORE = 999999
 
@@ -188,10 +292,10 @@ class Node:
     def __init__(self, data):
         self.data = data
         self.parent = None
-        self.f = NODE_MAX_SCORE
-        self.g = NODE_MAX_SCORE
-        self.h = NODE_MAX_SCORE
-        self.n = -1
+        self.f = None
+        self.g = None
+        self.h = None
+        self.n = None
 
 
 def solved_zero_first(size):
@@ -233,21 +337,59 @@ def solved_snail(size):
             res.append(i)
     return tuple(res)
 
-parser = argparse.ArgumentParser(description='n-puzzle @ 42')
-parser.add_argument('-f', '--final-state', type=int, help='solved state of the puzzle')
-parser.add_argument('-g', '--greedy', help='greedy search, f(g) = 0')
-parser.add_argument('-u', '--uniform', help='uniform-cost search, f(h) = 0')
-parser.add_argument('-h', '--heuristic', choices=['manhattan', 'euclidean', 'toop'], help='heuristic function')
+
+# https://www.geeksforgeeks.org/check-instance-15-puzzle-solvable/
+
+def count_inversions(puzzle):
+    res = 0
+    for i in range(len(puzzle) - 1):
+        for j in range(i + 1, len(puzzle)):
+            if puzzle[i] and puzzle[j]:     #skip zero
+                if puzzle[i] > puzzle[j]:
+                    res += 1
+    print('inversions', res)
+    return res
+
+def is_solvable(puzzle, size):
+    inversions = count_inversions(puzzle)
+    if size % 2 == 1:   # n is odd, 3x3 puzzle, 5x5 puzzle
+        if inversions % 2 == 0:
+            return True
+    else:               # n is even
+        zero_row = size - (puzzle.index(0) // size)
+        if zero_row % 2 == 0 and inversions % 2 == 1:
+            return True
+        if zero_row % 2 == 1 and inversions % 2 == 0:
+            return True
+    return False
 
 
 
-fn = 'input0.txt'
-if len(sys.argv) > 1:
-    fn = sys.argv[1]
-    
-with open(fn) as f:
-    data = f.read().splitlines()
-    f.close()
+HEURISTICS = {
+        'hamming': heuristic_hamming,
+        'chebyshev': heuristic_chebyshev,
+        'manhattan': heuristic_manhattan,
+        'euclidean': heuristic_euclidean,
+        'euclidean2': heuristic_euclidean2
+
+        }
+
+parser = argparse.ArgumentParser(description='n-puzzle 42')
+
+parser.add_argument('-g', action='store_true', help='greedy search')
+parser.add_argument('-u', action='store_true', help='uniform-cost search')
+parser.add_argument('-f', help='heuristic function',
+        choices=list(HEURISTICS.keys()), default='manhattan')
+parser.add_argument('-s', help='solved state of the puzzle',
+        choices=['zerofirst', 'zerolast', 'snail'], default='snail')
+parser.add_argument('-v', action='store_true', help='gui visualize solution')
+parser.add_argument('file', help='input file')
+
+args = parser.parse_args()
+
+with open(args.file) as fp:
+    data = fp.read().splitlines()
+    fp.close()
 
 data = [line.split('#')[0] for line in data]                                        #remove comments
 data = [line for line in data if len(line) > 0]                                     #remove empty lines
@@ -259,18 +401,36 @@ for line in data:
     for itm in line:
         flat.append(itm)
 data = tuple(flat)
-solved = solved_snail(size)
-#solved = solved_zero_last(size)
+
+solved = None
+if args.s == 'zerofirst':
+    solved = solved_zero_first(size)
+elif args.s == 'zerolast':
+    solved = solved_zero_last(size)
+elif args.s == 'snail':                                       #default
+    solved = solved_snail(size)
+
+if not is_solvable(data, size):
+    print('this puzzle is unsolvable')
+    sys.exit(0)
+
+TRANSITION_COST = 1
+if args.g:
+    TRANSITION_COST = 0
+
 
 print('initial state', data)
 print('final state', solved)
 
+for k in HEURISTICS:
+    print(k,'score\t: ', HEURISTICS[k](data,solved,size))
+
 root = Node(data)
-root.f = 0
-root.g = 0
-root.h = heuristic(root.data, solved, size)
 unique_id = 0
 root.n = unique_id
+root.g = 0
+root.h = HEURISTICS[args.f](data, solved, size)
+root.f = root.g + root.h
 opened = []
 open_set = {}
 heappush(opened, (root.f, root.n, root))
@@ -305,13 +465,15 @@ while opened and not success:
         print('closed set count', len(closed_set))
         print('nodes evaluated', evaluated)
         print('rediscovered nodes', rediscovered)
+        if args.v:
+            visualizer(steps, size)
         break
     else:
 
         del open_set[e.data]
         closed_set[e.data] = e
         moves = possible_moves(e.data, size)
-        tentative_g = e.g + 1
+        tentative_g = e.g + TRANSITION_COST
 
         for m in moves:
             if m in closed_set:
@@ -324,7 +486,9 @@ while opened and not success:
             else:
                 n = Node(m)
                 open_set[m] = n
-                n.h = heuristic(m, solved, size)
+                n.h = 0
+                if not args.u:
+                    n.h = HEURISTICS[args.f](m, solved, size)
             unique_id += 1
             n.n = unique_id
             n.parent = e
