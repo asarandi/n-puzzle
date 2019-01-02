@@ -181,6 +181,24 @@ def heuristic_euclidean(candidate, solved, size):
             res += sqrt((y*y) + (x*x))
     return res
 
+
+# 3 1 2 4 5 6 7 8 0
+# 0 1 2 4 5 6 7 8 3
+# 1 0 2 4 5 6 7 8 3
+# 1 2 3 4 5 6 7 8 0
+
+def heuristic_gaschnig(candidate, solved, size):
+    res = heuristic_manhattan(candidate, solved, size)
+    candidate = list(candidate)
+    solved = list(solved)
+    while candidate != solved:
+        for i in range(size * size):
+            zi = candidate.index(0)
+            if i != zi and candidate[i] != solved[i]:
+                candidate[i], candidate[zi] = candidate[zi], candidate[i]
+        res += 1
+    return res
+
 def heuristic_euclidean2(candidate, solved, size):      #not admissible
     res = 0
     for i in range(size*size):
@@ -375,7 +393,8 @@ HEURISTICS = {
         'manhattan': heuristic_manhattan,
         'euclidean': heuristic_euclidean,
         'euclidean2': heuristic_euclidean2,
-        'conflict': linear_conflict
+        'conflict': linear_conflict,
+        'gaschnig': heuristic_gaschnig
 
         }
 
