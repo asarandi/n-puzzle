@@ -181,11 +181,43 @@ def heuristic_euclidean(candidate, solved, size):
             res += sqrt((y*y) + (x*x))
     return res
 
+def heuristic_misplaced(candidate, solved, size):
+    res = 0   
+#    res = heuristic_euclidean(candidate, solved, size)    
+    res = heuristic_hamming(candidate, solved, size)
+    for i in range(size*size):
+        if candidate[i] != 0 and candidate[i] != solved[i]:
+            ci = solved.index(candidate[i])
+            if ci // size != i // size:
+                res += 1
+            if ci % size != i % size:
+                res += 1
+    return res
+
+
+def heuristic_suminv(candidate, solved, size):  #not admissible, over estimates
+    res = 0
+    for i in range(size * size - 1):
+        if candidate[i]:
+            si = solved.index(candidate[i])
+            leftside = solved[:si]
+            rightside = candidate[i + 1:]
+            for k in rightside:
+                if k != 0 and k in leftside:
+                    res += 1
+    return res
+
+
+
+
 
 # 3 1 2 4 5 6 7 8 0
 # 0 1 2 4 5 6 7 8 3
 # 1 0 2 4 5 6 7 8 3
 # 1 2 3 4 5 6 7 8 0
+
+
+
 
 def heuristic_gaschnig(candidate, solved, size):
     res = heuristic_manhattan(candidate, solved, size)
@@ -378,7 +410,7 @@ def is_solvable(puzzle, size):
         if inversions % 2 == 0:
             return True
     else:               # n is even
-        zero_row = size - (puzzle.index(0) // size)
+        zero_row = size - puzzle.index(0) // size
         if zero_row % 2 == 0 and inversions % 2 == 1:
             return True
         if zero_row % 2 == 1 and inversions % 2 == 0:
@@ -388,14 +420,15 @@ def is_solvable(puzzle, size):
 
 
 HEURISTICS = {
-        'hamming': heuristic_hamming,
-        'chebyshev': heuristic_chebyshev,
-        'manhattan': heuristic_manhattan,
-        'euclidean': heuristic_euclidean,
-        'euclidean2': heuristic_euclidean2,
-        'conflict': linear_conflict,
-        'gaschnig': heuristic_gaschnig
-
+        'hamming':      heuristic_hamming,
+        'chebyshev':    heuristic_chebyshev,
+        'manhattan':    heuristic_manhattan,
+        'euclidean':    heuristic_euclidean,
+        'euclidea2':    heuristic_euclidean2,
+        'conflict':     linear_conflict,
+        'gaschnig':     heuristic_gaschnig,
+        'misplaced':    heuristic_misplaced,
+        'suminv':       heuristic_suminv
         }
 
 parser = argparse.ArgumentParser(description='n-puzzle 42')
