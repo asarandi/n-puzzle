@@ -1,4 +1,4 @@
-#!/nfs/2016/a/asarandi/.bin/pypy3
+#!/usr/bin/env pypy3
 
 import sys
 import os
@@ -15,7 +15,7 @@ GUI_BOX_SIZE = 100
 GUI_BOX_SPACING = 10
 GUI_BOX_BORDER_WIDTH = 3
 GUI_FRAME_INDEX = 0
-GUI_DELAY = 500
+GUI_DELAY = 200
 GUI_COLOR_1 = '#f5f5dc'
 GUI_COLOR_2 = '#e9e9af'
 GUI_COLOR_3 = '#dddd88'
@@ -184,7 +184,7 @@ def heuristic_euclidean(candidate, solved, size):
 def heuristic_misplaced(candidate, solved, size):
     res = 0   
 #    res = heuristic_euclidean(candidate, solved, size)    
-    res = heuristic_hamming(candidate, solved, size)
+#    res = heuristic_hamming(candidate, solved, size)
     for i in range(size*size):
         if candidate[i] != 0 and candidate[i] != solved[i]:
             ci = solved.index(candidate[i])
@@ -217,17 +217,21 @@ def heuristic_suminv(candidate, solved, size):  #not admissible, over estimates
 # 1 2 3 4 5 6 7 8 0
 
 
-
-
 def heuristic_gaschnig(candidate, solved, size):
-    res = heuristic_manhattan(candidate, solved, size)
+    res = 0
     candidate = list(candidate)
     solved = list(solved)
     while candidate != solved:
-        for i in range(size * size):
-            zi = candidate.index(0)
-            if i != zi and candidate[i] != solved[i]:
-                candidate[i], candidate[zi] = candidate[zi], candidate[i]
+        zi = candidate.index(0)
+        if solved[zi] != 0:
+            sv = solved[zi]
+            ci = candidate.index(sv)
+            candidate[ci], candidate[zi] = candidate[zi], candidate[ci]
+        else:
+            for i in range(size * size):
+                if solved[i] != candidate[i]:
+                    candidate[i], candidate[zi] = candidate[zi], candidate[i]
+                    break
         res += 1
     return res
 
@@ -307,34 +311,60 @@ def is_correct_column(idx, candidate, solved, size):
         return True
     return False
 
+
+def count_lc(tj, c_row, s_row):
+    if tj not in s_row:
+        return 0
+    if not tj:
+        return 0
+    c_idx = c_row.index(tj)
+    s_idx = s_row.index(tj)
+    if c_idx == s_idx:
+        return 0
+    res = 0
+    if c_idx < s_idx:
+        c_idx += 1
+        while c_idx <= s_idx:
+            if c_row[c_idx] in s_row and c_row[c_idx] != 0:
+                res += 1
+            c_idx += 1
+
+    elif c_idx > s_idx:
+        c_idx -= 1
+        while c_idx >= s_idx:
+            if c_row[c_idx] in s_row and c_row[c_idx] != 0:
+                res += 1
+            c_idx -= 1
+    return res
+
 def linear_conflict(candidate, solved, size):
     res = 0
     PENALTY = 1
-    for i in range(size * size):
-        if is_correct_row(i, candidate, solved, size):
-            r = i // size
-            for j in range(r, r+size):
-                if j != i:
-                    if is_correct_row(j, candidate, solved, size):
-                        if j > i:
-                            if solved.index(candidate[j]) < solved.index(candidate[i]):
-                                res += PENALTY
-                        elif i > j:
-                            if solved.index(candidate[i]) < solved.index(candidate[j]):
-                                res += PENALTY
-                           
-    for i in range(size * size):
-        if is_correct_column(i, candidate, solved, size):
-            r = i % size
-            for j in range(r, r+size*size, size):
-                if j != i:
-                    if is_correct_column(j, candidate, solved, size):
-                        if j > i:
-                            if solved.index(candidate[j]) < solved.index(candidate[i]):
-                                res += PENALTY
-                        elif i > j:
-                            if solved.index(candidate[i]) < solved.index(candidate[j]):
-                                res += PENALTY
+
+    candidate_rows = [[] for y in range(size)] 
+    candidate_columns = [[] for x in range(size)] 
+    solved_rows = [[] for y in range(size)] 
+    solved_columns = [[] for x in range(size)] 
+    for y in range(size):
+        for x in range(size):
+            idx = y * size + x
+            candidate_rows[y].append(candidate[y * size + x])
+            candidate_columns[x].append(candidate[y * size + x])
+            solved_rows[y].append(solved[y * size + x])
+            solved_columns[x].append(solved[y * size + x])
+
+
+    for i in range(size):
+        for t in candidate_rows[i]:
+#            print(candidate_rows[i], solved_rows[i])
+            res += count_lc(t, candidate_rows[i], solved_rows[i])
+
+
+    for i in range(size):
+        for t in candidate_columns[i]:
+#            print(candidate_columns[i], solved_columns[i])
+            res += count_lc(t, candidate_columns[i], solved_columns[i])
+
 
     res += heuristic_manhattan(candidate, solved, size)                            
     return res

@@ -1,0 +1,10 @@
+#solution = zerofirst
+#hamming = 7
+#gaschnig = 10
+#manhattan = 14
+#conflict = 24
+#optimal = 26
+3
+2 7 0
+5 4 3
+8 1 6
