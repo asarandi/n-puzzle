@@ -1,8 +1,0 @@
-#puzzle type zerofirst
-#gaschnig 12, manhattan 8
-
-
-3
-0 2 1
-4 3 8
-7 6 5

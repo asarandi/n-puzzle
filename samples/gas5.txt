@@ -1,4 +1,5 @@
 # https://www2.informatik.hu-berlin.de/~wandelt/ggp/Search.pdf
+# slide 90
 # puzzle type = zerolast
 # gaschnig score should be 10
 
