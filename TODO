@@ -2,3 +2,15 @@ implement the snail function
 implement check for unsolvable puzzle
 DONE -- try heapq
 re-read pdf and update TODO
+
+
+# https://cse.sc.edu/~mgv/csce580sp15/gradPres/HanssonMayerYung1992.pdf
+# https://stackoverflow.com/questions/43965229/linear-conflict-violating-admissibility-and-driving-me-insane
+
+#
+# https://lyfat.wordpress.com/2012/05/22/euclidean-vs-chebyshev-vs-manhattan-distance/
+#
+
+
+# https://www.geeksforgeeks.org/check-instance-15-puzzle-solvable/
+

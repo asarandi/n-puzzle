@@ -4,101 +4,11 @@ import sys
 import os
 from copy import deepcopy
 from time import sleep
-from tkinter import *
-#from operator import itemgetter
 from heapq import heappush, heappop, heapify
 from math import sqrt
 import argparse
-
-GUI_FONT = ('Arial', 36)
-GUI_BOX_SIZE = 100
-GUI_BOX_SPACING = 10
-GUI_BOX_BORDER_WIDTH = 3
-GUI_FRAME_INDEX = 0
-GUI_DELAY = 200
-GUI_COLOR_1 = '#f5f5dc'
-GUI_COLOR_2 = '#e9e9af'
-GUI_COLOR_3 = '#dddd88'
-GUI_OUTLINE_1 = '#ff0000'
-GUI_OUTLINE_2 = '#00ff00'
-GUI_OUTLINE_3 = '#0000ff'
-
-def gui_replay(master, canvas, item_matrix, solution, puzzle_size):
-    global GUI_FRAME_INDEX
-
-    numbers = solution[GUI_FRAME_INDEX].data
-    next_zero = None
-    color_this = None
-    if GUI_FRAME_INDEX + 1 < len(solution):
-        next_zero = solution[GUI_FRAME_INDEX + 1].data.index(0)
-        color_this = solution[GUI_FRAME_INDEX].data[next_zero]
-    for y in range(puzzle_size):
-        for x in range(puzzle_size):
-            n = numbers[y+puzzle_size*x]
-            BORDER_COLOR = "#000000"
-            if n == solution[-1].data[y+puzzle_size*x]:
-                BORDER_COLOR = "#00bb00"    #if number is in place, show green cell border
-            else:
-                BORDER_COLOR = "#bb0000"    #else red cell border
-
-            if n == 0:
-                canvas.itemconfig(item_matrix[y][x][0],  fill=GUI_COLOR_2, outline=GUI_COLOR_2, width=GUI_BOX_BORDER_WIDTH)
-            elif n == color_this:
-                canvas.itemconfig(item_matrix[y][x][0],  fill=GUI_COLOR_1, outline=BORDER_COLOR, width=GUI_BOX_BORDER_WIDTH)
-            else:
-                canvas.itemconfig(item_matrix[y][x][0],  fill=GUI_COLOR_1, outline=BORDER_COLOR, width=GUI_BOX_BORDER_WIDTH)
-
-            s = str(n)
-            if not n:
-                s = ''
-            canvas.itemconfig(item_matrix[y][x][1], text=s)
-
-    GUI_FRAME_INDEX += 1
-    if GUI_FRAME_INDEX >= len(solution):
-        GUI_FRAME_INDEX = 0
-    canvas.update()
-
-    if GUI_FRAME_INDEX != 0:
-        master.after(GUI_DELAY, gui_replay, master, canvas, item_matrix, solution, puzzle_size)
-
-def gui_close(event):
-    print(event)
-    sys.exit(0)
-
-def gui_item_matrix(canvas, puzzle_size):
-    item_matrix = [[[None, None] for x in range(puzzle_size)] for y in range(puzzle_size)]
-    for y in range(puzzle_size):
-        for x in range(puzzle_size):
-            y0 = y * GUI_BOX_SIZE + GUI_BOX_SPACING
-            x0 = x * GUI_BOX_SIZE + GUI_BOX_SPACING
-
-            item_matrix[y][x][0] = canvas.create_rectangle(y0,x0,y0+GUI_BOX_SIZE-GUI_BOX_SPACING,x0+GUI_BOX_SIZE-GUI_BOX_SPACING,
-                    dash=(5,4,5,3),
-                    fill=GUI_COLOR_1)
-            item_matrix[y][x][1] = canvas.create_text(
-                    (
-                        y0 + (GUI_BOX_SIZE - GUI_BOX_SPACING) / 2,
-                        x0 + (GUI_BOX_SIZE - GUI_BOX_SPACING) / 2
-                        ),
-                    font=GUI_FONT,
-                    text=''
-                    )
-
-    return item_matrix
-
-def visualizer(solution, puzzle_size):
-    master = Tk()
-    canvas_width = (GUI_BOX_SIZE * puzzle_size) + GUI_BOX_SPACING
-    canvas_height = (GUI_BOX_SIZE * puzzle_size) + GUI_BOX_SPACING
-    canvas = Canvas(master, width=canvas_width+1, height=canvas_height+1, bg=GUI_COLOR_2, borderwidth=0, highlightthickness=0)
-    canvas.pack()
-    item_matrix = gui_item_matrix(canvas, puzzle_size)
-    os.system('''/usr/bin/osascript -e 'tell app "Finder" to set frontmost of process "pypy3" to true' ''')
-    master.bind('<Escape>', gui_close)
-    master.bind('<Q>', gui_close)
-    master.bind('<q>', gui_close)
-    master.after(0, gui_replay, master, canvas, item_matrix, solution, puzzle_size)
-    master.mainloop()
+from visualizer import visualizer
+import heuristics
 
 def error_exit(msg):
     print(msg)
@@ -148,227 +58,6 @@ def possible_moves(data, size):
         down = clone_and_swap(data,y,y+size)
         res.append(down)
     return res
-                
-#
-# https://lyfat.wordpress.com/2012/05/22/euclidean-vs-chebyshev-vs-manhattan-distance/
-#
-
-def heuristic_hamming(candidate, solved, size): #aka tiles out of place
-    res = 0
-    for i in range(size*size):
-        if candidate[i] != 0 and candidate[i] != solved[i]:
-            res += 1
-    return res
-
-
-def heuristic_manhattan(candidate, solved, size):
-    res = 0
-    for i in range(size*size):
-        if candidate[i] != 0 and candidate[i] != solved[i]:
-            ci = solved.index(candidate[i])
-            y = (i // size) - (ci // size)
-            x = (i % size) - (ci % size)
-            res += abs(y) + abs(x)
-    return res
-
-def heuristic_euclidean(candidate, solved, size):
-    res = 0
-    for i in range(size*size):
-        if candidate[i] != 0 and candidate[i] != solved[i]:
-            ci = solved.index(candidate[i])
-            y = (i // size) - (ci // size)
-            x = (i % size) - (ci % size)
-            res += sqrt((y*y) + (x*x))
-    return res
-
-def heuristic_misplaced(candidate, solved, size):
-    res = 0   
-#    res = heuristic_euclidean(candidate, solved, size)    
-#    res = heuristic_hamming(candidate, solved, size)
-    for i in range(size*size):
-        if candidate[i] != 0 and candidate[i] != solved[i]:
-            ci = solved.index(candidate[i])
-            if ci // size != i // size:
-                res += 1
-            if ci % size != i % size:
-                res += 1
-    return res
-
-
-def heuristic_suminv(candidate, solved, size):  #not admissible, over estimates
-    res = 0
-    for i in range(size * size - 1):
-        if candidate[i]:
-            si = solved.index(candidate[i])
-            leftside = solved[:si]
-            rightside = candidate[i + 1:]
-            for k in rightside:
-                if k != 0 and k in leftside:
-                    res += 1
-    return res
-
-
-
-
-
-# 3 1 2 4 5 6 7 8 0
-# 0 1 2 4 5 6 7 8 3
-# 1 0 2 4 5 6 7 8 3
-# 1 2 3 4 5 6 7 8 0
-
-
-def heuristic_gaschnig(candidate, solved, size):
-    res = 0
-    candidate = list(candidate)
-    solved = list(solved)
-    while candidate != solved:
-        zi = candidate.index(0)
-        if solved[zi] != 0:
-            sv = solved[zi]
-            ci = candidate.index(sv)
-            candidate[ci], candidate[zi] = candidate[zi], candidate[ci]
-        else:
-            for i in range(size * size):
-                if solved[i] != candidate[i]:
-                    candidate[i], candidate[zi] = candidate[zi], candidate[i]
-                    break
-        res += 1
-    return res
-
-def heuristic_euclidean2(candidate, solved, size):      #not admissible
-    res = 0
-    for i in range(size*size):
-        if candidate[i] != 0 and candidate[i] != solved[i]:
-            ci = solved.index(candidate[i])
-            y = (i // size) - (ci // size)
-            x = (i % size) - (ci % size)
-            res += (y*y) + (x*x)
-    return res
-
-def heuristic_chebyshev(candidate, solved, size):       #not admissible
-    res = 0
-    for i in range(size*size):
-        if candidate[i] != 0 and candidate[i] != solved[i]:
-            ci = solved.index(candidate[i])
-            y = (i // size) - (ci // size)
-            x = (i % size) - (ci % size)
-            res += max(abs(y), abs(x))
-    return res
-
-
-
-
-'''
-- 3 - 1
-- - - -
-
-- - 3 1
-- - - -
-
-- - 3 -
-- - - 1
-
-- - 3 -
-- - 1 -
-
-- - 3 -  
-- 1 - -
-
-- 1 3 -
-- - - -
-
-- 1 - 3
-- - - -
-
-
-
-01 02 03 04
-12 13 14 05
-11 -- 15 06
-10 09 08 07
-
--- 14 -- 12
-
-
-
-'''
-# https://cse.sc.edu/~mgv/csce580sp15/gradPres/HanssonMayerYung1992.pdf
-# https://stackoverflow.com/questions/43965229/linear-conflict-violating-admissibility-and-driving-me-insane
-
-def is_correct_row(idx, candidate, solved, size):
-    if candidate[idx] == solved[idx]:
-        return True
-    si = solved.index(candidate[idx])
-    if si // size == idx // size:
-        return True
-    return False
-
-def is_correct_column(idx, candidate, solved, size):
-    if candidate[idx] == solved[idx]:
-        return True
-    si = solved.index(candidate[idx])
-    if si % size == idx % size:
-        return True
-    return False
-
-
-def count_lc(tj, c_row, s_row):
-    if tj not in s_row:
-        return 0
-    if not tj:
-        return 0
-    c_idx = c_row.index(tj)
-    s_idx = s_row.index(tj)
-    if c_idx == s_idx:
-        return 0
-    res = 0
-    if c_idx < s_idx:
-        c_idx += 1
-        while c_idx <= s_idx:
-            if c_row[c_idx] in s_row and c_row[c_idx] != 0:
-                res += 1
-            c_idx += 1
-
-    elif c_idx > s_idx:
-        c_idx -= 1
-        while c_idx >= s_idx:
-            if c_row[c_idx] in s_row and c_row[c_idx] != 0:
-                res += 1
-            c_idx -= 1
-    return res
-
-def linear_conflict(candidate, solved, size):
-    res = 0
-    PENALTY = 1
-
-    candidate_rows = [[] for y in range(size)] 
-    candidate_columns = [[] for x in range(size)] 
-    solved_rows = [[] for y in range(size)] 
-    solved_columns = [[] for x in range(size)] 
-    for y in range(size):
-        for x in range(size):
-            idx = y * size + x
-            candidate_rows[y].append(candidate[y * size + x])
-            candidate_columns[x].append(candidate[y * size + x])
-            solved_rows[y].append(solved[y * size + x])
-            solved_columns[x].append(solved[y * size + x])
-
-
-    for i in range(size):
-        for t in candidate_rows[i]:
-#            print(candidate_rows[i], solved_rows[i])
-            res += count_lc(t, candidate_rows[i], solved_rows[i])
-
-
-    for i in range(size):
-        for t in candidate_columns[i]:
-#            print(candidate_columns[i], solved_columns[i])
-            res += count_lc(t, candidate_columns[i], solved_columns[i])
-
-
-    res += heuristic_manhattan(candidate, solved, size)                            
-    return res
-                               
 
 NODE_MAX_SCORE = 999999
 
@@ -380,7 +69,6 @@ class Node:
         self.g = None
         self.h = None
         self.n = None
-
 
 def solved_zero_first(size):
     return tuple([x for x in range(size*size)])
@@ -421,9 +109,6 @@ def solved_snail(size):
             res.append(i)
     return tuple(res)
 
-
-# https://www.geeksforgeeks.org/check-instance-15-puzzle-solvable/
-
 def count_inversions(puzzle):
     res = 0
     for i in range(len(puzzle) - 1):
@@ -449,16 +134,20 @@ def is_solvable(puzzle, size):
 
 
 
+
+
+                            
+                            
 HEURISTICS = {
-        'hamming':      heuristic_hamming,
-        'chebyshev':    heuristic_chebyshev,
-        'manhattan':    heuristic_manhattan,
-        'euclidean':    heuristic_euclidean,
-        'euclidea2':    heuristic_euclidean2,
-        'conflict':     linear_conflict,
-        'gaschnig':     heuristic_gaschnig,
-        'misplaced':    heuristic_misplaced,
-        'suminv':       heuristic_suminv
+        'hamming':      heuristics.hamming,
+        'chebyshev':    heuristics.chebyshev,
+        'manhattan':    heuristics.manhattan,
+        'euclidean':    heuristics.euclidean,
+        'euclidea2':    heuristics.euclidean2,
+        'conflicts':    heuristics.linear_conflicts,
+        'gaschnig':     heuristics.gaschnig,
+        'misplaced':    heuristics.misplaced,
+        'suminv':       heuristics.suminv
         }
 
 parser = argparse.ArgumentParser(description='n-puzzle 42')

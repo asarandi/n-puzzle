@@ -1,0 +1,8 @@
+# https://www2.informatik.hu-berlin.de/~wandelt/ggp/Search.pdf
+# puzzle type = zerolast
+# gaschnig score should be 6
+
+3
+00 02 01
+05 04 03
+06 07 08

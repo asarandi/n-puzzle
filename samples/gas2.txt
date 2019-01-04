@@ -1,0 +1,7 @@
+# puzzle type = zerolast
+# gaschnig score should be 6
+
+3
+00 02 01
+07 04 05
+06 03 08
