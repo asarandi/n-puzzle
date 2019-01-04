@@ -1,4 +1,6 @@
 from tkinter import *
+from os import system
+from sys import exit
 
 GUI_FONT = ('Arial', 36)
 GUI_BOX_SIZE = 100
@@ -15,6 +17,7 @@ GUI_OUTLINE_3 = '#0000ff'
 GUI_COLOR_GREEN = '#00bb00'
 GUI_COLOR_RED = '#bb0000'
 GUI_COLOR_BLACK = '#000000'
+GUI_DASH = (5,4,5,3)
 
 def gui_replay(master, canvas, item_matrix, solution, puzzle_size):
     global GUI_FRAME_INDEX
@@ -30,16 +33,25 @@ def gui_replay(master, canvas, item_matrix, solution, puzzle_size):
             n = numbers[y+puzzle_size*x]
             BORDER_COLOR = None
             if n == solution[-1].data[y+puzzle_size*x]:
-                BORDER_COLOR = "#00bb00"    #if number is in place, show green cell border
+                BORDER_COLOR = GUI_COLOR_GREEN    #if number is in place, show green cell border
             else:
-                BORDER_COLOR = "#bb0000"    #else red cell border
+                BORDER_COLOR = GUI_COLOR_RED    #else red cell border
 
             if n == 0:
-                canvas.itemconfig(item_matrix[y][x][0],  fill=GUI_COLOR_2, outline=GUI_COLOR_2, width=GUI_BOX_BORDER_WIDTH)
+                canvas.itemconfig(item_matrix[y][x][0],
+                        fill=GUI_COLOR_2,
+                        outline=GUI_COLOR_2,
+                        width=GUI_BOX_BORDER_WIDTH)
             elif n == color_this:
-                canvas.itemconfig(item_matrix[y][x][0],  fill=GUI_COLOR_1, outline=BORDER_COLOR, width=GUI_BOX_BORDER_WIDTH)
+                canvas.itemconfig(item_matrix[y][x][0],
+                        fill=GUI_COLOR_1,
+                        outline=BORDER_COLOR,
+                        width=GUI_BOX_BORDER_WIDTH)
             else:
-                canvas.itemconfig(item_matrix[y][x][0],  fill=GUI_COLOR_1, outline=BORDER_COLOR, width=GUI_BOX_BORDER_WIDTH)
+                canvas.itemconfig(item_matrix[y][x][0],
+                        fill=GUI_COLOR_1,
+                        outline=BORDER_COLOR,
+                        width=GUI_BOX_BORDER_WIDTH)
 
             s = str(n)
             if not n:
@@ -55,27 +67,22 @@ def gui_replay(master, canvas, item_matrix, solution, puzzle_size):
         master.after(GUI_DELAY, gui_replay, master, canvas, item_matrix, solution, puzzle_size)
 
 def gui_close(event):
-    print(event)
-    sys.exit(0)
+    exit(0)
 
 def gui_item_matrix(canvas, puzzle_size):
     item_matrix = [[[None, None] for x in range(puzzle_size)] for y in range(puzzle_size)]
     for y in range(puzzle_size):
         for x in range(puzzle_size):
+
             y0 = y * GUI_BOX_SIZE + GUI_BOX_SPACING
             x0 = x * GUI_BOX_SIZE + GUI_BOX_SPACING
+            y1 = y0 + GUI_BOX_SIZE - GUI_BOX_SPACING
+            x1 = x0 + GUI_BOX_SIZE - GUI_BOX_SPACING
+            item_matrix[y][x][0] = canvas.create_rectangle(y0, x0, y1, x1, dash=GUI_DASH, fill=GUI_COLOR_1)
 
-            item_matrix[y][x][0] = canvas.create_rectangle(y0,x0,y0+GUI_BOX_SIZE-GUI_BOX_SPACING,x0+GUI_BOX_SIZE-GUI_BOX_SPACING,
-                    dash=(5,4,5,3),
-                    fill=GUI_COLOR_1)
-            item_matrix[y][x][1] = canvas.create_text(
-                    (
-                        y0 + (GUI_BOX_SIZE - GUI_BOX_SPACING) / 2,
-                        x0 + (GUI_BOX_SIZE - GUI_BOX_SPACING) / 2
-                        ),
-                    font=GUI_FONT,
-                    text=''
-                    )
+            yt = y0 + ((GUI_BOX_SIZE - GUI_BOX_SPACING) / 2)
+            xt = x0 + ((GUI_BOX_SIZE - GUI_BOX_SPACING) / 2)
+            item_matrix[y][x][1] = canvas.create_text((yt, xt), font=GUI_FONT, text='')
 
     return item_matrix
 
@@ -86,7 +93,7 @@ def visualizer(solution, puzzle_size):
     canvas = Canvas(master, width=canvas_width+1, height=canvas_height+1, bg=GUI_COLOR_2, borderwidth=0, highlightthickness=0)
     canvas.pack()
     item_matrix = gui_item_matrix(canvas, puzzle_size)
-    os.system('''/usr/bin/osascript -e 'tell app "Finder" to set frontmost of process "pypy3" to true' ''')
+    system('''/usr/bin/osascript -e 'tell app "Finder" to set frontmost of process "pypy3" to true' ''')
     master.bind('<Escape>', gui_close)
     master.bind('<Q>', gui_close)
     master.bind('<q>', gui_close)

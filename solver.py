@@ -109,56 +109,59 @@ def solved_snail(size):
             res.append(i)
     return tuple(res)
 
-def count_inversions(puzzle):
+def count_inversions(puzzle, solved, size):
     res = 0
-    for i in range(len(puzzle) - 1):
-        for j in range(i + 1, len(puzzle)):
-            if puzzle[i] and puzzle[j]:     #skip zero
-                if puzzle[i] > puzzle[j]:
+    for i in range(size * size - 1):
+        for j in range(i + 1, size * size):            
+#            if puzzle[i] and puzzle[j]:     #skip zero
+                vi = puzzle[i]
+                vj = puzzle[j]
+                if solved.index(vi) > solved.index(vj):
                     res += 1
     print('inversions', res)
     return res
 
-def is_solvable(puzzle, size):
-    inversions = count_inversions(puzzle)
+def is_solvable(puzzle, solved, size):
+    inversions = count_inversions(puzzle, solved, size)
     if size % 2 == 1:   # n is odd, 3x3 puzzle, 5x5 puzzle
         if inversions % 2 == 0:
             return True
     else:               # n is even
-        zero_row = size - puzzle.index(0) // size
-        if zero_row % 2 == 0 and inversions % 2 == 1:
+        puzzle_zero_row = puzzle.index(0) // size
+        puzzle_zero_column = puzzle.index(0) % size
+
+        solved_zero_row = solved.index(0) // size
+        solved_zero_column = solved.index(0) % size
+
+        taxicab = abs(puzzle_zero_row - solved_zero_row) + abs(puzzle_zero_column - puzzle_zero_column)
+        if taxicab % 2 == 0 and inversions % 2 == 0:
             return True
-        if zero_row % 2 == 1 and inversions % 2 == 0:
+        if taxicab % 2 == 1 and inversions % 2 == 1:
             return True
     return False
 
-
-
-
-
-                            
-                            
 HEURISTICS = {
-        'hamming':      heuristics.hamming,
-        'chebyshev':    heuristics.chebyshev,
-        'manhattan':    heuristics.manhattan,
-        'euclidean':    heuristics.euclidean,
-        'euclidea2':    heuristics.euclidean2,
-        'conflicts':    heuristics.linear_conflicts,
+
+        'hamming':      heuristics.hamming,        
         'gaschnig':     heuristics.gaschnig,
-        'misplaced':    heuristics.misplaced,
-        'suminv':       heuristics.suminv
+        'manhattan':    heuristics.manhattan,
+        'conflicts':    heuristics.linear_conflicts
+
+#        'misplaced':    heuristics.misplaced,
+#        'suminv':       heuristics.suminv,
+#        'chebyshev':    heuristics.chebyshev,
+#        'euclidean':    heuristics.euclidean,
+#        'euclidean2':   heuristics.euclidean2,
+
         }
 
 parser = argparse.ArgumentParser(description='n-puzzle 42')
 
 parser.add_argument('-g', action='store_true', help='greedy search')
 parser.add_argument('-u', action='store_true', help='uniform-cost search')
-parser.add_argument('-f', help='heuristic function',
-        choices=list(HEURISTICS.keys()), default='manhattan')
-parser.add_argument('-s', help='solved state of the puzzle',
-        choices=['zerofirst', 'zerolast', 'snail'], default='snail')
-parser.add_argument('-v', action='store_true', help='gui visualize solution')
+parser.add_argument('-f', help='heuristic function', choices=list(HEURISTICS.keys()), default='conflicts')
+parser.add_argument('-s', help='solution type', choices=['zerofirst', 'zerolast', 'snail'], default='snail')
+parser.add_argument('-v', action='store_true', help='gui visualizer')
 parser.add_argument('file', help='input file')
 
 args = parser.parse_args()
@@ -169,12 +172,24 @@ with open(args.file) as fp:
 
 data = [line.split('#')[0] for line in data]                                        #remove comments
 data = [line for line in data if len(line) > 0]                                     #remove empty lines
-data = [[int(x) for x in line.split(' ') if len(x) > 0] for line in data]           #convert to ints
-
-size = validate_size(data)
-flat = []
+puzzle = []
 for line in data:
-    for itm in line:
+    row = []
+    for x in line.split(' '):
+        if len(x) > 0:
+            if not x.isdigit():
+                print('invalid input')
+                sys.exit(1)
+            row.append(int(x))
+    puzzle.append(row)
+
+#data = [[int(x) for x in line.split(' ') if len(x) > 0] for line in data]           #convert to ints
+
+
+size = validate_size(puzzle)
+flat = []
+for row in puzzle:
+    for itm in row:
         flat.append(itm)
 data = tuple(flat)
 
@@ -186,9 +201,16 @@ elif args.s == 'zerolast':
 elif args.s == 'snail':                                       #default
     solved = solved_snail(size)
 
-if not is_solvable(data, size):
-    print('this puzzle is unsolvable')
+
+red='\033[0;31m'
+green='\033[0;32m'
+yellow='\033[0;33m'
+nc='\033[0m'
+if not is_solvable(data, solved, size):
+    print(red + 'this puzzle is unsolvable' + nc)
     sys.exit(0)
+else:
+    print(green + 'this puzzle is solvable' + nc)
 
 TRANSITION_COST = 1
 if args.g:
