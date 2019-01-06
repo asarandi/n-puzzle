@@ -1,0 +1,9 @@
+ #puzzle type = zero last
+ #http://cubezzz.duckdns.org/drupal/?q=node/view/223
+ 4
+12 8 5 9 
+15 7 6 13 
+10 0 11 14 
+ 1 2 3 4 
+ 
+

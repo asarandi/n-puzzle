@@ -133,7 +133,7 @@ def is_solvable(puzzle, solved, size):
         solved_zero_row = solved.index(0) // size
         solved_zero_column = solved.index(0) % size
 
-        taxicab = abs(puzzle_zero_row - solved_zero_row) + abs(puzzle_zero_column - puzzle_zero_column)
+        taxicab = abs(puzzle_zero_row - solved_zero_row) + abs(puzzle_zero_column - solved_zero_column)
         if taxicab % 2 == 0 and inversions % 2 == 0:
             return True
         if taxicab % 2 == 1 and inversions % 2 == 1:
@@ -159,7 +159,7 @@ parser = argparse.ArgumentParser(description='n-puzzle 42')
 
 parser.add_argument('-g', action='store_true', help='greedy search')
 parser.add_argument('-u', action='store_true', help='uniform-cost search')
-parser.add_argument('-f', help='heuristic function', choices=list(HEURISTICS.keys()), default='conflicts')
+parser.add_argument('-f', help='heuristic function', choices=list(HEURISTICS.keys()), default='manhattan')
 parser.add_argument('-s', help='solution type', choices=['zerofirst', 'zerolast', 'snail'], default='snail')
 parser.add_argument('-v', action='store_true', help='gui visualizer')
 parser.add_argument('file', help='input file')
@@ -170,7 +170,7 @@ with open(args.file) as fp:
     data = fp.read().splitlines()
     fp.close()
 
-data = [line.split('#')[0] for line in data]                                        #remove comments
+data = [line.strip().split('#')[0] for line in data]                                        #remove comments
 data = [line for line in data if len(line) > 0]                                     #remove empty lines
 puzzle = []
 for line in data:
@@ -182,8 +182,6 @@ for line in data:
                 sys.exit(1)
             row.append(int(x))
     puzzle.append(row)
-
-#data = [[int(x) for x in line.split(' ') if len(x) > 0] for line in data]           #convert to ints
 
 
 size = validate_size(puzzle)
