@@ -1,5 +1,3 @@
-from math import sqrt
-
 def hamming(candidate, solved, size): #aka tiles out of place
     res = 0
     for i in range(size*size):

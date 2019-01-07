@@ -1,6 +1,6 @@
 import argparse
-import heuristics
-import solved_states
+from npuzzle import heuristics
+from npuzzle import solved_states
 
 def is_valid_input(data):
     if len(data[0]) != 1:
@@ -32,7 +32,6 @@ def get_input():
     parser.add_argument('-v', action='store_true', help='gui visualizer')
     parser.add_argument('file', help='input file', type=argparse.FileType('r'))
     args = parser.parse_args()
-#    with open(args.file) as fp:
     data = args.file.read().splitlines()
     args.file.close()
     data = [line.strip().split('#')[0] for line in data]      #remove comments

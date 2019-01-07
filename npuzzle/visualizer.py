@@ -1,9 +1,9 @@
 from tkinter import *
 from os import system
-from sys import exit
+from os.path import basename
+from sys import exit, executable
 
-INTERPRETER = 'Python'
-GUI_FONT = ('Arial', 36)
+GUI_FONT = ('Arial', 32)
 GUI_BOX_SIZE = 100
 GUI_BOX_SPACING = 10
 GUI_BOX_BORDER_WIDTH = 3
@@ -94,9 +94,9 @@ def visualizer(solution, puzzle_size):
     canvas = Canvas(master, width=canvas_width+1, height=canvas_height+1, bg=GUI_COLOR_2, borderwidth=0, highlightthickness=0)
     canvas.pack()
     item_matrix = gui_item_matrix(canvas, puzzle_size)
-    system('''/usr/bin/osascript -e 'tell app "Finder" to set frontmost of process "''' + INTERPRETER  + '''" to true' ''')
     master.bind('<Escape>', gui_close)
     master.bind('<Q>', gui_close)
     master.bind('<q>', gui_close)
     master.after(0, gui_replay, master, canvas, item_matrix, solution, puzzle_size)
+    system('''/usr/bin/osascript -e 'tell app "Finder" to set frontmost of process "''' + basename(executable)  + '''" to true' ''')
     master.mainloop()

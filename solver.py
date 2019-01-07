@@ -1,19 +1,18 @@
-#!/usr/bin/env python3
+#!/usr/bin/env pypy3
 
 import sys
-import os
-from visualizer import visualizer
-from search import a_star_search
-from is_solvable import is_solvable
-import parser
-import heuristics
-import solved_states
+from npuzzle.visualizer import visualizer
+from npuzzle.search import a_star_search
+from npuzzle.is_solvable import is_solvable
+from npuzzle import parser
+from npuzzle import heuristics
+from npuzzle import solved_states
 
 
 if __name__ == '__main__':
     data = parser.get_input()
     if not data:
-        sys.exit(0)
+        sys.exit()
     puzzle, size, args = data
     solved = solved_states.KV[args.s](size)
     if not is_solvable(puzzle, solved, size):
