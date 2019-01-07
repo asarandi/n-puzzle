@@ -1,6 +1,7 @@
 #!/usr/bin/env pypy3
 
 import sys
+from time import perf_counter
 from npuzzle.visualizer import visualizer
 from npuzzle.search import a_star_search
 from npuzzle.is_solvable import is_solvable
@@ -23,11 +24,15 @@ if __name__ == '__main__':
         TRANSITION_COST = 0
 
     HEURISTICS = [heuristics.KV[args.f]]
+    t_start = perf_counter()
     res = a_star_search(puzzle, solved, size, HEURISTICS, TRANSITION_COST)
+    t_delta = perf_counter() - t_start
+    print('search finished in %.4f second(s)' % (t_delta))
     if not res:
         print('solution not found')
         sys.exit(0)
     steps, pqueue, open_set, closed_set, evaluated, rediscovered = res
+    print('%d evaluated nodes, %.8f second(s) per node' % (evaluated, t_delta / evaluated))
     print('success')
     print('current g value', steps[-1].g)
     print('length of solution', len(steps))

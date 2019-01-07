@@ -56,7 +56,6 @@ def a_star_search(puzzle, solved, size, HEURISTICS, TRANSITION_COST):
         f_score, node_id, e = heappop(pqueue)
         if e.data not in open_set:
             continue
-        evaluated += 1
         if e.data == solved:
             steps = []
             while True:
@@ -67,6 +66,7 @@ def a_star_search(puzzle, solved, size, HEURISTICS, TRANSITION_COST):
             steps = list(reversed(steps))
             return (steps, pqueue, open_set, closed_set, evaluated, rediscovered)
         else:
+            evaluated += 1
             del open_set[e.data]
             closed_set[e.data] = e
             moves = possible_moves(e.data, size)
