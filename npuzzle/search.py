@@ -1,19 +1,10 @@
-from copy import deepcopy
-from heapq import heappush, heappop, heapify
+from itertools import count
+from heapq import heappush, heappop
 
 EMPTY_TILE = 0
 
-class Node:
-    def __init__(self, data):
-        self.data = data
-        self.parent = None
-        self.f = None
-        self.g = None
-        self.h = None
-        self.n = None
-
 def clone_and_swap(data,y0,y1):
-    clone = deepcopy(list(data))
+    clone = list(data)
     tmp = clone[y0]
     clone[y0] = clone[y1]
     clone[y1] = tmp
@@ -36,59 +27,34 @@ def possible_moves(data, size):
         res.append(down)
     return res
 
-def a_star_search(puzzle, solved, size, HEURISTICS, TRANSITION_COST):
-    root = Node(puzzle)
-    unique_id = 0
-    root.n = unique_id
-    root.g = 0
-    root.h = 0
-    for h in HEURISTICS:
-        root.h += h(puzzle, solved, size)
-    root.f = root.g + root.h
-    pqueue = []
+def a_star_search(puzzle, solved, size, HEURISTIC, TRANSITION_COST):
+    c = count()
+    queue = [(0, next(c), puzzle, 0, None)]
     open_set = {}
-    heappush(pqueue, (root.f, root.n, root))
-    open_set[root.data] = root
     closed_set = {}
-    evaluated = 0
-    rediscovered = 0
-    while pqueue:
-        f_score, node_id, e = heappop(pqueue)
-        if e.data not in open_set:
+    while queue:
+        _, _, node, node_g, parent = heappop(queue)
+        if node == solved:
+            steps = [node]
+            while parent is not None:
+                steps.append(parent)
+                parent = closed_set[parent]
+            steps.reverse()
+            return (steps, queue, open_set, closed_set, 1, 1)
+        if node in closed_set:
             continue
-        if e.data == solved:
-            steps = []
-            while True:
-                steps.append(e)
-                if not e.parent:
-                    break
-                e = e.parent
-            steps = list(reversed(steps))
-            return (steps, pqueue, open_set, closed_set, evaluated, rediscovered)
-        else:
-            evaluated += 1
-            del open_set[e.data]
-            closed_set[e.data] = e
-            moves = possible_moves(e.data, size)
-            tentative_g = e.g + TRANSITION_COST
-            for m in moves:
-                if m in closed_set:
+        closed_set[node] = parent
+        tentative_g = node_g + TRANSITION_COST
+        moves = possible_moves(node, size)
+        for m in moves:
+            if m in closed_set:
+                continue
+            if m in open_set:
+                move_g, move_h = open_set[m]
+                if move_g <= tentative_g:
                     continue
-                if m in open_set:
-                    if tentative_g >= open_set[m].g:
-                        continue
-                    n = open_set[m]
-                    rediscovered += 1
-                else:
-                    n = Node(m)
-                    open_set[m] = n
-                    n.h = 0
-                    for h in HEURISTICS:
-                        n.h += h(m, solved, size)
-                unique_id += 1
-                n.n = unique_id
-                n.parent = e
-                n.g = tentative_g
-                n.f = n.g + n.h
-                heappush(pqueue, (n.f, n.n, n))
+            else:
+                move_h = HEURISTIC(m, solved, size)
+            open_set[m] = tentative_g, move_h
+            heappush(queue, (move_h + tentative_g, next(c), m, tentative_g, node))
     return None

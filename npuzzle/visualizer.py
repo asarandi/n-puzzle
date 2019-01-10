@@ -23,17 +23,17 @@ GUI_DASH = (5,4,5,3)
 def gui_replay(master, canvas, item_matrix, solution, puzzle_size):
     global GUI_FRAME_INDEX
 
-    numbers = solution[GUI_FRAME_INDEX].data
+    numbers = solution[GUI_FRAME_INDEX]
     next_zero = None
     color_this = None
     if GUI_FRAME_INDEX + 1 < len(solution):
-        next_zero = solution[GUI_FRAME_INDEX + 1].data.index(0)
-        color_this = solution[GUI_FRAME_INDEX].data[next_zero]
+        next_zero = solution[GUI_FRAME_INDEX + 1].index(0)
+        color_this = solution[GUI_FRAME_INDEX][next_zero]
     for y in range(puzzle_size):
         for x in range(puzzle_size):
             n = numbers[y+puzzle_size*x]
             BORDER_COLOR = None
-            if n == solution[-1].data[y+puzzle_size*x]:
+            if n == solution[-1][y+puzzle_size*x]:
                 BORDER_COLOR = GUI_COLOR_GREEN    #if number is in place, show green cell border
             else:
                 BORDER_COLOR = GUI_COLOR_RED    #else red cell border

@@ -1,3 +1,6 @@
+def uniform_cost(puzzle, solved, size):
+    return 0
+
 def hamming(candidate, solved, size): #aka tiles out of place
     res = 0
     for i in range(size*size):
