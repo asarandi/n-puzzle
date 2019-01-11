@@ -40,7 +40,7 @@ def a_star_search(puzzle, solved, size, HEURISTIC, TRANSITION_COST):
                 steps.append(parent)
                 parent = closed_set[parent]
             steps.reverse()
-            return (steps, queue, open_set, closed_set, 1, 1)
+            return (True, steps, queue, open_set, closed_set)
         if node in closed_set:
             continue
         closed_set[node] = parent
@@ -57,4 +57,4 @@ def a_star_search(puzzle, solved, size, HEURISTIC, TRANSITION_COST):
                 move_h = HEURISTIC(m, solved, size)
             open_set[m] = tentative_g, move_h
             heappush(queue, (move_h + tentative_g, next(c), m, tentative_g, node))
-    return None
+    return (False, [], queue, open_set, closed_set)
