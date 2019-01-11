@@ -36,6 +36,13 @@ def verbose_info(args, puzzle, solved, size):
             'final state': str(solved)}
     for k,v in opts2.items():
         print(color(opt_color, k), v)
+   
+    print(color('blue2', 'heuristic scores for initial state'))
+    for k,v in heuristics.KV.items():
+        print(color('blue2', '  - ' + k + '\t:'), v(puzzle, solved, size))
+
+
+
 
 
 
