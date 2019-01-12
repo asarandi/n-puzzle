@@ -3,7 +3,7 @@
 import sys
 from time import perf_counter
 from npuzzle.visualizer import visualizer
-from npuzzle.search import a_star_search
+from npuzzle.search import a_star_search, ida_star_search
 from npuzzle.is_solvable import is_solvable
 from npuzzle import colors
 from npuzzle.colors import color
@@ -88,15 +88,16 @@ if __name__ == '__main__':
 
     t_start = perf_counter()
     m_start = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-    res = a_star_search(puzzle, solved, size, HEURISTIC, TRANSITION_COST)
+#    res = a_star_search(puzzle, solved, size, HEURISTIC, TRANSITION_COST)
+    res2 = ida_star_search(puzzle, solved, size, HEURISTIC, TRANSITION_COST)
     m_delta = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss - m_start
     t_delta = perf_counter() - t_start
 
-    success, steps, queue, open_set, closed_set = res
     print(color('yellow','search duration') + ' %.4f second(s)' % (t_delta))
+    print(color('yellow','memory usage') + ' %d bytes' % (m_delta))
+    success, steps, queue, open_set, closed_set = res
     fmt = color('yellow','%d evaluated nodes %.8f second(s) per node')
     print(fmt % (len(closed_set), t_delta / max(len(closed_set),1) ))
-    print(color('yellow','memory usage') + ' %d bytes' % (m_delta))
     if success:
         print(color('green','length of solution'), len(steps))
         for s in steps:
@@ -108,4 +109,5 @@ if __name__ == '__main__':
     print(color('magenta','closed set count'), len(closed_set))
     if success and args.v:
         visualizer(steps, size)
+
 

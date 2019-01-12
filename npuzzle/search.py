@@ -1,5 +1,7 @@
 from itertools import count
 from heapq import heappush, heappop
+from collections import OrderedDict
+from math import inf
 
 EMPTY_TILE = 0
 
@@ -26,6 +28,47 @@ def possible_moves(data, size):
         down = clone_and_swap(data,y,y+size)
         res.append(down)
     return res
+
+def ida_star_search(puzzle, solved, size, HEURISTIC, TRANSITION_COST):
+    def search(path, g, bound):
+        node = next(reversed(path))
+        f = g + HEURISTIC(node, solved, size)
+        if f > bound:
+            return f
+        if node == solved:
+            return True
+        ret = inf
+        moves = possible_moves(node, size)
+        for m in moves:
+            if m not in path:
+                path[m] = next(c)
+                t = search(path, g + TRANSITION_COST, bound)
+                if t is True:
+                    return True
+                if t < ret:
+                    ret = t
+                path.popitem()
+        return ret
+
+    c = count()
+    bound = HEURISTIC(puzzle, solved, size)
+    path = OrderedDict()
+    path[puzzle] = next(c)
+    while path:
+        t = search(path, 0, bound)
+        if t is True:
+            print('ida star found')#, path, bound)
+            res = list(path)
+            print('ida star length', len(path))
+            for r in res:
+                print(r, path[r])
+            return True
+        elif t is inf: 
+            print('ida star not found')#, path, bound)
+            return False
+        else:
+            bound = t   
+
 
 def a_star_search(puzzle, solved, size, HEURISTIC, TRANSITION_COST):
     c = count()
