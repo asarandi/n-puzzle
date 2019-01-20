@@ -1,6 +1,6 @@
 from itertools import count
 from heapq import heappush, heappop
-from collections import OrderedDict
+from collections import deque
 from math import inf
 
 EMPTY_TILE = 0
@@ -29,10 +29,17 @@ def possible_moves(data, size):
         res.append(down)
     return res
 
+
+evaluated = 0
 def ida_star_search(puzzle, solved, size, HEURISTIC, TRANSITION_COST):
     def search(path, g, bound):
-        node = next(reversed(path))
-        f = g + HEURISTIC(node, solved, size)
+        global evaluated
+        evaluated += 1
+        node = path[0]
+        h = HEURISTIC(node, solved, size)
+#        if g + h >= 20:
+#            print('CONFLICTS', node, h)
+        f = g + h
         if f > bound:
             return f
         if node == solved:
@@ -41,33 +48,26 @@ def ida_star_search(puzzle, solved, size, HEURISTIC, TRANSITION_COST):
         moves = possible_moves(node, size)
         for m in moves:
             if m not in path:
-                path[m] = next(c)
+                path.appendleft(m)
                 t = search(path, g + TRANSITION_COST, bound)
                 if t is True:
                     return True
                 if t < ret:
                     ret = t
-                path.popitem()
+                path.popleft()
         return ret
 
-    c = count()
     bound = HEURISTIC(puzzle, solved, size)
-    path = OrderedDict()
-    path[puzzle] = next(c)
+    path = deque([puzzle])
     while path:
         t = search(path, 0, bound)
         if t is True:
-            print('ida star found')#, path, bound)
-            res = list(path)
-            print('ida star length', len(path))
-            for r in res:
-                print(r, path[r])
-            return True
-        elif t is inf: 
-            print('ida star not found')#, path, bound)
-            return False
+            path.reverse()
+            return (True, path, {'space':len(path), 'time':evaluated})
+        elif t is inf:
+            return (False, [], {'space':len(path), 'time':evaluated})
         else:
-            bound = t   
+            bound = t
 
 
 def a_star_search(puzzle, solved, size, HEURISTIC, TRANSITION_COST):
@@ -83,7 +83,7 @@ def a_star_search(puzzle, solved, size, HEURISTIC, TRANSITION_COST):
                 steps.append(parent)
                 parent = closed_set[parent]
             steps.reverse()
-            return (True, steps, queue, open_set, closed_set)
+            return (True, steps, {'space':len(open_set), 'time':len(closed_set)})
         if node in closed_set:
             continue
         closed_set[node] = parent
@@ -100,4 +100,4 @@ def a_star_search(puzzle, solved, size, HEURISTIC, TRANSITION_COST):
                 move_h = HEURISTIC(m, solved, size)
             open_set[m] = tentative_g, move_h
             heappush(queue, (move_h + tentative_g, next(c), m, tentative_g, node))
-    return (False, [], queue, open_set, closed_set)
+    return (False, [], {'space':len(open_set), 'time':len(closed_set)})

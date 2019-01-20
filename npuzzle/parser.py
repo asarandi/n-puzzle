@@ -24,7 +24,9 @@ def is_valid_input(data):
     return 'ok'
 
 def get_input():
-    parser = argparse.ArgumentParser(description='n-puzzle 42')
+    parser = argparse.ArgumentParser(description='n-puzzle @ 42 fremont')
+    parser.add_argument('-c', action='store_true', help='colors')
+    parser.add_argument('-ida', action='store_true', help='ida* search')
     parser.add_argument('-g', action='store_true', help='greedy search')
     parser.add_argument('-u', action='store_true', help='uniform-cost search')
     parser.add_argument('-f', help='heuristic function', choices=list(heuristics.KV.keys()), default='manhattan')

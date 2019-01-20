@@ -41,25 +41,30 @@ def linear_conflicts(candidate, solved, size):
     def count_conflicts(tj, c_row, s_row):
         if tj not in s_row:
             return 0
-        if not tj:
+        if tj == 0:
             return 0
         c_idx = c_row.index(tj)
         s_idx = s_row.index(tj)
         if c_idx == s_idx:
             return 0
         conflicts = 0
+        
         if c_idx < s_idx:
             c_idx += 1
             while c_idx <= s_idx:
-                if c_row[c_idx] in s_row and c_row[c_idx] != 0:
-                    conflicts += 1
+                if c_row[c_idx] != 0:
+                    if c_row[c_idx] in s_row: #) and c_row[c_idx] != 0:
+                        conflicts += 1
                 c_idx += 1
+            return conflicts
         elif c_idx > s_idx:
             c_idx -= 1
             while c_idx >= s_idx:
-                if c_row[c_idx] in s_row and c_row[c_idx] != 0:
-                    conflicts += 1
+                if c_row[c_idx] != 0:
+                    if c_row[c_idx] in s_row: # and c_row[c_idx] != 0:
+                        conflicts += 1
                 c_idx -= 1
+            return conflicts
         return conflicts
 
     res = manhattan(candidate, solved, size)                            # XXX
@@ -69,11 +74,11 @@ def linear_conflicts(candidate, solved, size):
     solved_columns = [[] for x in range(size)] 
     for y in range(size):
         for x in range(size):
-            idx = y * size + x
-            candidate_rows[y].append(candidate[y * size + x])
-            candidate_columns[x].append(candidate[y * size + x])
-            solved_rows[y].append(solved[y * size + x])
-            solved_columns[x].append(solved[y * size + x])
+            idx = (y * size) + x
+            candidate_rows[y].append(candidate[idx])
+            candidate_columns[x].append(candidate[idx])
+            solved_rows[y].append(solved[idx])
+            solved_columns[x].append(solved[idx])
     for i in range(size):
         for t in candidate_rows[i]:
             res += count_conflicts(t, candidate_rows[i], solved_rows[i])
