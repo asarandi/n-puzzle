@@ -38,28 +38,9 @@ def verbose_info(args, puzzle, solved, size):
     for k,v in heuristics.KV.items():
         print(color('blue2', '  - ' + k + '\t:'), v(puzzle, solved, size))
 
+    print(color('red2', 'search algorithm:'), 'IDA*' if args.ida else 'A*')
 
-
-
-
-
-
-
-    '''
-    opt_values = [args.g, args.u, is_solvable(puzzle, solved, size), args.v]
-    
-
-    option_color = 'cyan'
-    print(color
-    greedy search: YES/NO
-    uniform cost search: YES/NO
-    solvable: YES/NO
-    visualizer: YES/NO
-    solution type
-    initial state
-    final state
-    heuristic
-    '''
+#########################################################################################
 
 if __name__ == '__main__':
     data = parser.get_input()
@@ -69,11 +50,8 @@ if __name__ == '__main__':
     if args.c:
         colors.enabled = True
 
-    solved = solved_states.KV[args.s](size)
-    verbose_info(args, puzzle, solved, size)
-    if not is_solvable(puzzle, solved, size):
-        print(color('red','this puzzle is not solvable'))
-        sys.exit(0)
+    if args.ida:
+        args.g = False
 
     TRANSITION_COST = 1
     if args.g:
@@ -82,6 +60,12 @@ if __name__ == '__main__':
     HEURISTIC = heuristics.KV[args.f]
     if args.u:
         HEURISTIC = heuristics.uniform_cost
+
+    solved = solved_states.KV[args.s](size)
+    verbose_info(args, puzzle, solved, size)
+    if not is_solvable(puzzle, solved, size):
+        print(color('red','this puzzle is not solvable'))
+        sys.exit(0)
 
     maxrss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
     print(color('red', 'max rss before search:'), maxrss)
@@ -102,12 +86,13 @@ if __name__ == '__main__':
     print(fmt % (complexity['time'], t_delta / max(complexity['time'],1) ))
     if success:
         print(color('green','length of solution'), max(len(steps) - 1, 0))
+        print(color('green', 'initial state and solution steps:'))
         for s in steps:
             print(s)
     else:
         print(color('red','solution not found'))
-    print(color('magenta','space complexity'), complexity['space'])
-    print(color('magenta','time complexity'), complexity['time'])
+    print(color('magenta','space complexity'), complexity['space'], 'nodes in memory')
+    print(color('magenta','time complexity'), complexity['time'], 'evaluated nodes')
     if success and args.v:
         visualizer(steps, size)
 

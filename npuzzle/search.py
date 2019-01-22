@@ -30,37 +30,33 @@ def possible_moves(data, size):
     return res
 
 
-evaluated = 0
 def ida_star_search(puzzle, solved, size, HEURISTIC, TRANSITION_COST):
-    def search(path, g, bound):
-        global evaluated
+    def search(path, g, bound, evaluated):
         evaluated += 1
         node = path[0]
-        h = HEURISTIC(node, solved, size)
-#        if g + h >= 20:
-#            print('CONFLICTS', node, h)
-        f = g + h
+        f = g + HEURISTIC(node, solved, size)
         if f > bound:
-            return f
+            return f, evaluated
         if node == solved:
-            return True
+            return True, evaluated
         ret = inf
         moves = possible_moves(node, size)
         for m in moves:
             if m not in path:
                 path.appendleft(m)
-                t = search(path, g + TRANSITION_COST, bound)
+                t, evaluated = search(path, g + TRANSITION_COST, bound, evaluated)
                 if t is True:
-                    return True
+                    return True, evaluated
                 if t < ret:
                     ret = t
                 path.popleft()
-        return ret
+        return ret, evaluated
 
     bound = HEURISTIC(puzzle, solved, size)
     path = deque([puzzle])
+    evaluated = 0
     while path:
-        t = search(path, 0, bound)
+        t, evaluated = search(path, 0, bound, evaluated)
         if t is True:
             path.reverse()
             return (True, path, {'space':len(path), 'time':evaluated})
@@ -68,7 +64,6 @@ def ida_star_search(puzzle, solved, size, HEURISTIC, TRANSITION_COST):
             return (False, [], {'space':len(path), 'time':evaluated})
         else:
             bound = t
-
 
 def a_star_search(puzzle, solved, size, HEURISTIC, TRANSITION_COST):
     c = count()
