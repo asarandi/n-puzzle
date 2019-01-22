@@ -1,6 +1,6 @@
 #!/bin/bash
 
-prog='./solver.py'
+prog='./solver.py -c'
 
 
 

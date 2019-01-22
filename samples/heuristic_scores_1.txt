@@ -1,5 +1,12 @@
-# puzzle type = zerofirst
-# gaschnig score should be 6
+# puzzle type = zero_first
+#
+# hamming   4
+# gaschnig  6
+# manhattan 6
+# linear    8
+#
+# optimal   22
+#
 # https://www2.informatik.hu-berlin.de/~wandelt/ggp/Search.pdf
 # slide 90
 

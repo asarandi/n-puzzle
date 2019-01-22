@@ -1,0 +1,16 @@
+# puzzle type = zero_first
+#
+# hamming   8
+# gaschnig  10
+# manhattan 22
+# linear    22
+#
+# optimal   26
+#
+# https://www2.informatik.hu-berlin.de/~wandelt/ggp/Search.pdf
+# slide 90
+
+3
+04 03 06
+08 00 07
+05 02 01
