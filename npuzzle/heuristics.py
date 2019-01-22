@@ -38,36 +38,26 @@ def manhattan(candidate, solved, size):
 
 def linear_conflicts(candidate, solved, size):
 
-    def count_conflicts(tj, c_row, s_row):
-        if tj not in s_row:
-            return 0
-        if tj == 0:
-            return 0
-        c_idx = c_row.index(tj)
-        s_idx = s_row.index(tj)
-        if c_idx == s_idx:
-            return 0
-        conflicts = 0
-        
-        if c_idx < s_idx:
-            c_idx += 1
-            while c_idx <= s_idx:
-                if c_row[c_idx] != 0:
-                    if c_row[c_idx] in s_row: #) and c_row[c_idx] != 0:
-                        conflicts += 1
-                c_idx += 1
-            return conflicts
-        elif c_idx > s_idx:
-            c_idx -= 1
-            while c_idx >= s_idx:
-                if c_row[c_idx] != 0:
-                    if c_row[c_idx] in s_row: # and c_row[c_idx] != 0:
-                        conflicts += 1
-                c_idx -= 1
-            return conflicts
-        return conflicts
+    def count_conflicts(candidate_row, solved_row, size, ans=0):
+        counts = [0 for x in range(size)]
+        for i, tile_1 in enumerate(candidate_row):
+            if tile_1 in solved_row and tile_1 != 0:
+                for j, tile_2 in enumerate(candidate_row):
+                    if tile_2 in solved_row and tile_2 != 0:
+                        if tile_1 != tile_2:
+                            if (solved_row.index(tile_1) > solved_row.index(tile_2)) and i < j:
+                                counts[i] += 1
+                            if (solved_row.index(tile_1) < solved_row.index(tile_2)) and i > j:
+                                counts[i] += 1
+        if max(counts) == 0:
+            return ans * 2
+        else:
+            i = counts.index(max(counts))
+            candidate_row[i] = -1
+            ans += 1
+            return count_conflicts(candidate_row, solved_row, size, ans)
 
-    res = manhattan(candidate, solved, size)                            # XXX
+    res = manhattan(candidate, solved, size)
     candidate_rows = [[] for y in range(size)] 
     candidate_columns = [[] for x in range(size)] 
     solved_rows = [[] for y in range(size)] 
@@ -80,11 +70,9 @@ def linear_conflicts(candidate, solved, size):
             solved_rows[y].append(solved[idx])
             solved_columns[x].append(solved[idx])
     for i in range(size):
-        for t in candidate_rows[i]:
-            res += count_conflicts(t, candidate_rows[i], solved_rows[i])
+            res += count_conflicts(candidate_rows[i], solved_rows[i], size)
     for i in range(size):
-        for t in candidate_columns[i]:
-            res += count_conflicts(t, candidate_columns[i], solved_columns[i])
+            res += count_conflicts(candidate_columns[i], solved_columns[i], size)
     return res
 
 KV = {
