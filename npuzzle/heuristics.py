@@ -1,3 +1,8 @@
+from npuzzle.patterns import patterns_db
+
+def patterns(puzzle, solved, size):
+    return patterns_db(puzzle, solved, size)
+
 def uniform_cost(puzzle, solved, size):
     return 0
 
@@ -79,7 +84,8 @@ KV = {
         'hamming':      hamming,
         'gaschnig':     gaschnig,
         'manhattan':    manhattan,
-        'conflicts':    linear_conflicts
+        'conflicts':    linear_conflicts,
+        'patterns':     patterns
         }
 
 #

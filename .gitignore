@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+#npuzzle specific, patterns database file
+*.pdb
+
 # C extensions
 *.so
 

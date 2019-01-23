@@ -29,7 +29,6 @@ def possible_moves(data, size):
         res.append(down)
     return res
 
-
 def ida_star_search(puzzle, solved, size, HEURISTIC, TRANSITION_COST):
     def search(path, g, bound, evaluated):
         evaluated += 1
@@ -91,7 +90,7 @@ def a_star_search(puzzle, solved, size, HEURISTIC, TRANSITION_COST):
                 move_g, move_h = open_set[m]
                 if move_g <= tentative_g:
                     continue
-            else:
+            else:                
                 move_h = HEURISTIC(m, solved, size)
             open_set[m] = tentative_g, move_h
             heappush(queue, (move_h + tentative_g, next(c), m, tentative_g, node))
