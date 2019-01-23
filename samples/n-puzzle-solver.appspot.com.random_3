@@ -1,0 +1,10 @@
+#
+# according to website:
+# optimal solution: 46 moves
+# puzzle type: zero_last
+#
+4
+1 15 2 4
+11 14 12 9
+10 7 0 8
+6 5 13 3

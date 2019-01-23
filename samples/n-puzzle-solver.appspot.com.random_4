@@ -1,0 +1,13 @@
+# http://n-puzzle-solver.appspot.com/
+#
+# optimal: 32
+# puzzle type: zero_last
+#
+
+
+4
+
+11 5 2 4
+1 0 3 12
+7 6 15 8
+9 13 14 10

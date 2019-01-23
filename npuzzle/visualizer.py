@@ -2,6 +2,7 @@ from tkinter import *
 from os import system
 from os.path import basename
 from sys import exit, executable
+from platform import system as platform_system
 
 GUI_FONT = ('Arial', 32)
 GUI_BOX_SIZE = 100
@@ -98,5 +99,6 @@ def visualizer(solution, puzzle_size):
     master.bind('<Q>', gui_close)
     master.bind('<q>', gui_close)
     master.after(0, gui_replay, master, canvas, item_matrix, solution, puzzle_size)
-    system('''/usr/bin/osascript -e 'tell app "Finder" to set frontmost of process "''' + basename(executable)  + '''" to true' ''')
+    if platform_system is 'Darwin':
+        system('''/usr/bin/osascript -e 'tell app "Finder" to set frontmost of process "''' + basename(executable)  + '''" to true' ''')
     master.mainloop()

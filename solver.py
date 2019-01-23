@@ -85,14 +85,14 @@ if __name__ == '__main__':
     fmt = '%d' + color('yellow',' evaluated nodes, ') + '%.8f' + color('yellow',' second(s) per node')
     print(fmt % (complexity['time'], t_delta / max(complexity['time'],1) ))
     if success:
-        print(color('green','length of solution'), max(len(steps) - 1, 0))
+        print(color('green','length of solution:'), max(len(steps) - 1, 0))
         print(color('green', 'initial state and solution steps:'))
         for s in steps:
             print(s)
     else:
         print(color('red','solution not found'))
-    print(color('magenta','space complexity'), complexity['space'], 'nodes in memory')
-    print(color('magenta','time complexity'), complexity['time'], 'evaluated nodes')
+    print(color('magenta','space complexity:'), complexity['space'], 'nodes in memory')
+    print(color('magenta','time complexity:'), complexity['time'], 'evaluated nodes')
     if success and args.v:
         visualizer(steps, size)
 
