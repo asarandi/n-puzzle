@@ -99,6 +99,6 @@ def visualizer(solution, puzzle_size):
     master.bind('<Q>', gui_close)
     master.bind('<q>', gui_close)
     master.after(0, gui_replay, master, canvas, item_matrix, solution, puzzle_size)
-    if platform_system is 'Darwin':
+    if platform_system() is 'Darwin':
         system('''/usr/bin/osascript -e 'tell app "Finder" to set frontmost of process "''' + basename(executable)  + '''" to true' ''')
     master.mainloop()
