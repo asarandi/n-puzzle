@@ -1,0 +1,162 @@
+#!/usr/bin/env pypy3
+
+import argparse
+import pickle
+from npuzzle import solved_states
+from npuzzle import search
+from collections import deque
+import mmap
+
+visited_size = 57657600 * 9 * 2 # 518,918,400   five hundred eighteen megabytes
+database = mmap.mmap(-1, visited_size)
+
+# expecting tuple len 16,  will return bytearray of len 8
+def node_to_bytes(node):
+    b = bytearray()
+    i = 0
+    while i < len(node):
+        b.append((node[i] << 4) + node[i+1])
+        i += 2
+    return bytes(b)
+
+#expecting bytearray of len 8, will return tuple len 16
+def bytes_to_node(b):
+    lst = []
+    for i in b:
+        lst.append(i >> 4)
+        lst.append(i & 15)
+    return tuple(lst)
+
+def visited_put(node, extra, visited, nrecords=57657600*2):
+    b = node_to_bytes(node)
+    i = hash(b) #int.from_bytes(b, byteorder='little', signed=False) #use 8 bytes to create index
+    RECORD_SIZE = 9 # XXX hard coded 9
+    idx = (i % nrecords) * RECORD_SIZE
+    #collission handler
+    while True:
+        rec = visited[idx:idx + 8] # XXX hard coded 8, excluding extra info
+        if sum(rec) == 0:   # found empty space, save here
+            break
+        if rec == b: #int.from_bytes(rec, byteorder='little', signed=False) == i:
+            break           # found existing record, save here
+        idx += RECORD_SIZE
+        if idx >= nrecords * RECORD_SIZE:
+            idx = 0
+    #b.append(extra) #at this point len of bytearray should be 9
+    visited[idx:idx + 8] = b
+    visited[idx+8] = extra
+    
+def visited_get(node, visited, nrecords=57657600*2):
+    b = node_to_bytes(node)
+    i = hash(b) #int.from_bytes(b, byteorder='little', signed=False)
+    RECORD_SIZE = 9
+    idx = (i % nrecords) * RECORD_SIZE
+    while True:
+        rec = visited[idx:idx + 8]
+        if sum(rec) == 0:
+            return None #we reached empty space, record does not exist
+        if rec == b: #int.from_bytes(rec, byteorder='little', signed=False) == i:
+#            print('hahhuhuhu', rec, b)
+            return int(visited[idx+8]) #:idx+9]) #int.from_bytes(visited[idx+8:idx+9], byteorder='little', signed=False)
+            #return the extra info            
+        idx += RECORD_SIZE
+        if idx >= nrecords * RECORD_SIZE:
+            idx = 0
+
+
+def database_put(node, extra, database):
+    RECORD_SIZE = 9
+    NUM_RECORDS = len(database) / RECORD_SIZE
+    b = node_to_bytes(node)
+    idx = (hash(b) % NUM_RECORDS) * RECORD_SIZE
+    while True:
+        rec = [idx:idx + 8]
+        if sum(rec) == 0:
+            break
+        if rec == b:
+            break
+        idx += RECORD_SIZE
+        if idx >= len(database)
+            idx = 0
+    visited[idx:idx + 8] = b
+    visited[idx+8] = extra
+
+def database_get(node, database):
+    RECORD_SIZE = 9
+    NUM_RECORDS = len(database) / RECORD_SIZE
+    b = node_to_bytes(node)
+    idx = (hash(b) % NUM_RECORDS) * RECORD_SIZE
+    while True:
+        rec = visited[idx:idx + 8]
+        if sum(rec) == 0:
+            return None
+        if rec == b:
+            return int(visited[idx+8])
+        idx += RECORD_SIZE
+        if idx >= len(database):
+            idx = 0
+
+
+
+def visited_get(node, visited, nrecords=57657600*2):
+    b = node_to_bytes(node)
+    i = hash(b) #int.from_bytes(b, byteorder='little', signed=False)
+    RECORD_SIZE = 9
+    idx = (i % nrecords) * RECORD_SIZE
+    while True:
+        rec = visited[idx:idx + 8]
+        if sum(rec) == 0:
+            return None #we reached empty space, record does not exist
+        if rec == b: #int.from_bytes(rec, byteorder='little', signed=False) == i:
+#            print('hahhuhuhu', rec, b)
+            return int(visited[idx+8]) #:idx+9]) #int.from_bytes(visited[idx+8:idx+9], byteorder='little', signed=False)
+            #return the extra info            
+        idx += RECORD_SIZE
+        if idx >= nrecords * RECORD_SIZE:
+            idx = 0
+
+
+
+def pattern_plus_zero(node, pattern, filler):
+    lst = list(node)
+    for i, val in enumerate(lst):
+        if val != 0 and val not in pattern:
+            lst[i] = filler
+    return tuple(lst)
+    
+def pattern_only(node, pattern, filler):
+    lst = list(node)
+    for i, val in enumerate(lst):
+        if val not in pattern:
+            lst[i] = filler
+    return tuple(lst)
+
+PUZZLE_SIZE = 4
+#pattern and non zero filler
+patterns = {
+        (1,5,6,9,10,13) : 2,
+        (7,8,11,12,14,15) : 2,
+        (2,3,4) : 1
+        }
+
+for PAT1, filler in patterns.items():
+    root = pattern_plus_zero((1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0), PAT1, filler)   # XXX with zero !!
+    visited_put(root, 0, database)    #unvisited
+    queue = deque([root])
+    evaluated = 0
+
+    while queue:
+        node = queue.popleft()
+        evaluated += 1
+        if evaluated % 100000 == 0:
+            print(evaluated)
+        visited_put(node, 1, database) #visited
+        moves = search.possible_moves(node, PUZZLE_SIZE)
+        for m in moves:
+            if visited_get(m, database) != None:
+                continue    # record exists
+            visited_put(m, 0, database)
+            queue.append(m)
+            
+    print('done')
+
