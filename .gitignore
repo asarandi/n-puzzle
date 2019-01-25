@@ -5,6 +5,9 @@ __pycache__/
 
 #npuzzle specific, patterns database file
 *.pdb
+*.sqlite.*
+*.sqlite3.*
+*.lock
 
 # C extensions
 *.so
