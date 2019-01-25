@@ -84,13 +84,20 @@ patterns = {
         (2,3,4) : 1
         }
 
+
+def make_key(node, pattern):
+    k = 0
+    for p in pattern:
+        k <<= 4
+        k += node.index(p)
+    return k
+
+
 for PAT1, filler in patterns.items():
 
     visited_size = 57657600 * 9 * 2
     visited = mmap.mmap(-1, visited_size)
-    result_size = 5765760 * 12 #9 too small
-    result = mmap.mmap(-1, result_size)
-    
+    result = {}
     root = pattern_plus_zero((1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0), PAT1, filler)
     database_put(root, 1, visited)
     queue = deque([(root, 0)])
@@ -101,21 +108,18 @@ for PAT1, filler in patterns.items():
         evaluated += 1
         if evaluated % 1000000 == 0:
             print(evaluated)
-        pp = pattern_only(node, PAT1, filler)
-        database_put(pp, g, result, True)
+        pp = make_key(node, PAT1)
+        if pp not in result or result[pp] > g:
+            result[pp] = g
         moves = search.possible_moves(node, 4)
         for m in moves:
             if database_get(m, visited) != None:
                 continue    # record exists
             database_put(m, 1, visited)
-            cc = pattern_only(m, PAT1, filler)
-            queue.append((m, database_get(pp, result) + 1))
+            queue.append((m, result[pp] + 1))
             
-    print('done')
-    fn = str(PAT1) + '.pdb'
-    with open(fn, 'wb') as fp:
-        fp.write(result)
-        fp.close()
-    result.close()
+    fn = str(PAT1) + '.4x4_zerolast.pickled.dict.pdb'
+    pickle.dump(result, open(fn, 'wb'))
     visited.close()
+    print('done', fn)
 
