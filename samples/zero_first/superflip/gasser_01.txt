@@ -1,0 +1,7 @@
+#from ralph udo gasser's 80-move 15-puzzle positions
+#puzzle type = zero first
+4
+15 14 8 12
+10 11 9 13
+2 6 5 1
+3 7 4 0

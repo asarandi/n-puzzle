@@ -1,33 +1,29 @@
 from npuzzle import solved_states
 import pickle
 
-files = [      
-    '1_5_6_9_10_13.pickled.dict.pdb',
-    '7_8_11_12_14_15.pickled.dict.pdb',
-    '2_3_4.pickled.dict.pdb'
-    ]
+#files = ['PDB/snail.[1,12,11,10,9,8].pdb', 'PDB/snail.[13,14,15].pdb', 'PDB/snail.[2,3,4,5,6,7].pdb']
+files = ['PDB/zero_first.[1,2,3,7,11,15].pdb', 'PDB/zero_first.[4,5,6,9,10,14].pdb', 'PDB/zero_first.[8,12,13].pdb']
+#files = ['PDB/zero_last.[1,5,6,9,10,13].pdb','PDB/zero_last.[2,3,4].pdb','PDB/zero_last.[7,8,11,12,14,15].pdb']
 
-patterns = [
-        (1,5,6,9,10,13),
-        (7,8,11,12,14,15),
-        (2,3,4)
-        ]
 
-dictionaries = []
+dictionaries = {}
 
-for fn in files:
-    dictionaries.append(pickle.load(open(fn, 'rb')))
-    print('pickle loaded:', fn)
+for f in files:
+    sp = f.split('.')
+    pattern = []
+    for x in sp[1][1:-1].split(','):
+        pattern.append(int(x))
+    db = pickle.load(open(f, 'rb'))
+    dictionaries[tuple(pattern)] = db
+    print('pickle loaded:', f)
 
 def patterns_db(candidate, solved, size):
-    if solved != solved_states.zero_last(4):
-        return 0
     result = 0
-    for i, pat in enumerate(patterns):
+    for pattern in dictionaries:
         key = 0
-        for p in pat:
+        for p in pattern:
             key <<= 4
             key += candidate.index(p)
-        result += dictionaries[i][key]
+        result += dictionaries[pattern][key]
     return result
 
