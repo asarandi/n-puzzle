@@ -155,7 +155,6 @@ for puzzle_name, puzzle_data in puzzles.items():
             if evaluated % one_percent == 0:
                 percent_done += 1
                 print(percent_done, '%', end='\r')
-
             pp = pattern_to_key(node, pattern, filler)
             if pp not in result or result[pp] > g:
                 result[pp] = g
