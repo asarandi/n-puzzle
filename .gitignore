@@ -8,6 +8,8 @@ __pycache__/
 *.sqlite.*
 *.sqlite3.*
 *.lock
+pdb_server_in
+pdb_server_out
 
 # C extensions
 *.so

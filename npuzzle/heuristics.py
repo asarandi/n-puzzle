@@ -1,7 +1,42 @@
-from npuzzle.patterns import patterns_db
+from os import path as os_path
+from os import stat as os_stat
+from npuzzle import solved_states
+
 
 def patterns(puzzle, solved, size):
-    return patterns_db(puzzle, solved, size)
+    if size != 4:
+        return manhattan(puzzle, solved, size)
+    query = bytearray()
+    if solved == solved_states.KV['snail'](size):
+        query.append(0)
+    elif solved == solved_states.KV['zero_first'](size):
+        query.append(1)
+    elif solved == solved_states.KV['zero_last'](size):
+        query.append(2)
+    else:
+        return 0
+    i = 0
+    while i < len(puzzle):
+        b = puzzle[i] << 4
+        b += puzzle[i+1]
+        query.append(b)
+        i += 2
+
+    with open('pdb_server_in', 'wb') as fpi:
+        fpi.write(query)
+        fpi.close()
+    while True:
+        with open('pdb_server_out', 'rb') as fpo:
+            result = fpo.read()
+            if len(result) != 0:
+                break
+            fpo.close()
+            
+    if result[1:] == query[1:]:
+        return result[0]
+    else:
+        print('patterns heuristic error, this shouldnt happend')
+        return 0
 
 def uniform_cost(puzzle, solved, size):
     return 0
@@ -85,8 +120,17 @@ KV = {
         'gaschnig':     gaschnig,
         'manhattan':    manhattan,
         'conflicts':    linear_conflicts,
-        'patterns':     patterns
+#        'patterns':     patterns
         }
+
+
+# if there is a readable pipe called 'pdb_server_in', then
+# add 'patterns' string and patterns() function to available heuristics list
+
+
+if os_path.exists('pdb_server_in'):
+    if os_stat('pdb_server_in').st_mode & 0o10400:   #readable fifo pipe
+        KV['patterns'] = patterns
 
 #
 #KV = {
