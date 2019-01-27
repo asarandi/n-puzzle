@@ -3,11 +3,11 @@ import pickle
 
 #files = ['PDB/snail.[1,12,11,10,9,8].pdb', 'PDB/snail.[13,14,15].pdb', 'PDB/snail.[2,3,4,5,6,7].pdb']
 #files = ['PDB/zero_first.[1,2,3,7,11,15].pdb', 'PDB/zero_first.[4,5,6,9,10,14].pdb', 'PDB/zero_first.[8,12,13].pdb']
+
 #files = ['PDB/zero_last.[1,5,6,9,10,13].pdb','PDB/zero_last.[2,3,4].pdb','PDB/zero_last.[7,8,11,12,14,15].pdb']
+#files = ['PDB771/zero_last.[1,5,6,9,10,13,14].pdb', 'PDB771/zero_last.[3,4,7,8,11,12,15].pdb', 'PDB771/zero_last.[2].pdb']
 
-files = ['PDB771/zero_last.[1,5,6,9,10,13,14].pdb', 'PDB771/zero_last.[3,4,7,8,11,12,15].pdb', 'PDB771/zero_last.[2].pdb']
-
-ENABLED = True
+ENABLED = False
 
 dictionaries = {}
 
