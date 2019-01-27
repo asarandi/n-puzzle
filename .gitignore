@@ -10,6 +10,7 @@ __pycache__/
 *.lock
 pdb_server_in
 pdb_server_out
+*.tgz
 
 # C extensions
 *.so
