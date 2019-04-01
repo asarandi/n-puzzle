@@ -3,7 +3,6 @@
 import sys
 import resource
 from time import perf_counter
-from platform import system as platform_system
 from npuzzle.visualizer import visualizer
 from npuzzle.search import a_star_search, ida_star_search
 from npuzzle.is_solvable import is_solvable
@@ -12,6 +11,26 @@ from npuzzle.colors import color
 from npuzzle import parser
 from npuzzle import heuristics
 from npuzzle import solved_states
+
+def pretty_print_steps(steps, size):
+    width = len(str(size*size))
+    decor = '-'
+    for n in range(len(steps)):
+        if n == 0:
+            print('-[initial state]%s' % (4*decor,))
+        else:
+            print('-[step %2d]%s' % (n,10*decor,))    
+        print()
+        for i in range(size):
+            for j in range(size):
+                tile = str(steps[n][i*size+j])
+                if tile == '0':
+                    tile = color('red2', '-'*width)
+                print(' %*s' % (width, tile), end='')
+            print()
+        print()
+    print('%s' % (20*decor,))
+
 
 def color_yes_no(v):
     return color('green', 'YES') if v else color('red', 'NO')
@@ -26,9 +45,9 @@ def verbose_info(args, puzzle, solved, size):
     for k,v in opts1.items():
         print(color(opt_color, k), color_yes_no(v))
 
-    opts2 = {'heuristic function:': args.f,
+    opts2 = {'heuristic function:': color('green2', args.f),
             'puzzle size:': str(size),
-            'solution type:': args.s,
+            'solution type:': color('green2', args.s),
             'initial state:': str(puzzle),
             'final state:': str(solved)}
     for k,v in opts2.items():
@@ -87,13 +106,15 @@ if __name__ == '__main__':
     if success:
         print(color('green','length of solution:'), max(len(steps) - 1, 0))
         print(color('green', 'initial state and solution steps:'))
-        for s in steps:
-            print(s)
+        if args.p:
+            pretty_print_steps(steps, size)
+        else:
+            for s in steps:
+                print(s)
     else:
         print(color('red','solution not found'))
     print(color('magenta','space complexity:'), complexity['space'], 'nodes in memory')
     print(color('magenta','time complexity:'), complexity['time'], 'evaluated nodes')
     if success and args.v:
         visualizer(steps, size)
-
 

@@ -62,7 +62,6 @@ def ida_star_search(puzzle, solved, size, HEURISTIC, TRANSITION_COST):
         elif t is inf:
             return (False, [], {'space':len(path), 'time':evaluated})
         else:
-            print('ida* bound:', t)
             bound = t
 
 def a_star_search(puzzle, solved, size, HEURISTIC, TRANSITION_COST):

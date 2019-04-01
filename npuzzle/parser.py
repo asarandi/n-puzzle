@@ -20,7 +20,7 @@ def is_valid_input(data):
     generated = [x for x in range(size**2)]
     difference = [x for x in generated if x not in expanded]
     if len(difference) != 0:
-        return 'puzzle tiles must be in range from 0 to size**2'
+        return 'puzzle tiles must be in range from 0 to SIZE**2-1'
     return 'ok'
 
 def get_input():
@@ -31,6 +31,7 @@ def get_input():
     parser.add_argument('-u', action='store_true', help='uniform-cost search')
     parser.add_argument('-f', help='heuristic function', choices=list(heuristics.KV.keys()), default='manhattan')
     parser.add_argument('-s', help='solved state', choices=list(solved_states.KV.keys()), default='snail')
+    parser.add_argument('-p', action='store_true', help='pretty print solution steps')
     parser.add_argument('-v', action='store_true', help='gui visualizer')
     parser.add_argument('file', help='input file', type=argparse.FileType('r'))
     args = parser.parse_args()
