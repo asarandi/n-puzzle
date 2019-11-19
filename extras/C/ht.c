@@ -42,7 +42,7 @@ static void ht_extend(t_ht *ht)
         return (void)fprintf(stderr, "%s: calloc() failed\n", __func__);
     for (i=count=0; i < ht->capacity; i++)
     {
-        if (ht->entries[i]) {            
+        if (ht->entries[i]) {
             if (__ht_insert(new_entries, new_capacity, ht->entries[i]))
                 ++count;
         }
@@ -71,7 +71,7 @@ t_vertex     *ht_find(t_ht *ht, uint64_t key)
     {
         if (((t_vertex *)ht->entries[i])->puzzle == key)
             return (t_vertex *)ht->entries[i];
-        i = (i + 1) % ht->capacity;            
+        i = (i + 1) % ht->capacity;
     }
     return NULL;
 }
@@ -82,7 +82,7 @@ t_ht *ht_init()
 
     if (!(ht = calloc(1, sizeof(t_ht))))
         (void)fprintf(stderr, "%s: calloc() failed\n", __func__);
-    ht->capacity = 256;    
+    ht->capacity = 256;
     if (!(ht->entries = calloc(ht->capacity, sizeof(void *))))
         (void)fprintf(stderr, "%s: calloc() failed\n", __func__);
     return ht;

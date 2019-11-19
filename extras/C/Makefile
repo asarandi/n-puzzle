@@ -1,9 +1,9 @@
 NAME = 15puzzle
-SRC = ht.c main.c moves.c pq.c utils.c
+SRC = heuristic.c ht.c main.c moves.c pq.c utils.c
 OBJ = $(SRC:.c=.o)
 
-CFLAGS += -Wall -Werror -Wextra
-LDFLAGS +=
+CFLAGS += -O2 -Wall -Werror -Wextra
+LDFLAGS += -O2
 
 all: $(NAME)
 

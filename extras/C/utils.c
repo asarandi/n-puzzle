@@ -8,23 +8,8 @@ void print_puzzle(t_vertex *v)
     for (i=0; i<16; i++)
     {
         nibble = (v->puzzle >> ((15 - i) << 2)) & 15;
-		printf("%d%s", nibble, i + 1 < 16 ? ", " : "\n");
+        printf("%d%s", nibble, i + 1 < 16 ? ", " : "\n");
     }
-}
-
-int heuristic(uint64_t x)
-{
-    int i, j, nibble, res;
-
-    for (i=res=0; i<16; i++)
-    {
-        nibble = (x >> ((15 - i) << 2)) & 15;
-        if (!nibble)
-            continue;
-        j = nibble - 1;
-        res += ABS((i >> 2) - (j >> 2)) + ABS((i & 3) - (j & 3));
-    }
-    return res;
 }
 
 int cmp(void *ptr_a, void *ptr_b)

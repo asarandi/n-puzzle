@@ -1,7 +1,7 @@
 ### minimalist C version
  - 15 puzzle only
  - `zero_last` config only
- - `manhattan distance` heuristic only
+ - `linear conflicts` heuristic only
  - limited error checking
 
 #### building:

@@ -62,8 +62,8 @@ int main(int ac, char **av)
         v = ht_find(ht, v->parent);
     }
     print_puzzle(root);
-    printf("pq->num_nodes = %ld pq->capacity = %ld\n", pq->num_nodes, pq->capacity); 
-    printf(" ht->num_keys = %ld ht->capacity = %ld\n",  ht->num_keys, ht->capacity); 
+    printf("pq->num_nodes = %ld pq->capacity = %ld\n", pq->num_nodes, pq->capacity);
+    printf(" ht->num_keys = %ld ht->capacity = %ld\n",  ht->num_keys, ht->capacity);
     for (size_t i=0; i<ht->capacity; i++)
     {
         if (ht->entries[i])
@@ -73,7 +73,7 @@ int main(int ac, char **av)
         }
     }
     printf("is_open = %ld, is_closed = %ld\n", is_open, is_closed);
-    
+
     pq_destroy(pq);
     ht_destroy_all(ht);
     return 0;

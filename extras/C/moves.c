@@ -4,13 +4,13 @@ static int clone_counter;
 
 int get_zero_index(uint64_t x)
 {
-	int	i;
+    int i;
 
-	for (i=0; i<16; i++)
-	{
-		if (!(x & (15L << (i << 2))))
-			return (15 - i);
-	}
+    for (i=0; i<16; i++)
+    {
+        if (!(x & (15L << (i << 2))))
+            return (15 - i);
+    }
     return -1;
 }
 
@@ -21,10 +21,10 @@ t_vertex **make_moves(t_vertex *v)
     static uint64_t     x, moves[4];
 
     for (i=0; i<4; i++)
-	{
+    {
         res[i] = NULL;
-		moves[i] = 0;
-	}
+        moves[i] = 0;
+    }
 
     x = v->puzzle;
     i = get_zero_index(x);
