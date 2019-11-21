@@ -1,38 +1,36 @@
 #include "npuzzle.h"
 
-static int  count_conflicts(int candidate, int solved, int retval)
+static int  count_conflicts(int candidate, int solved, int res)
 {
-    int i, ic, is, j, jc, js;
+    int i, j, ti, tj;
     int f, k, counts[4];
 
     for (i=0; i<4; i++)
         counts[i] = 0;
     for (i=0; i<4; i++)
     {
-        ic = (candidate >> ((3 - i) << 2)) & 15;
-        if (!ic) continue ;
-        for (is=f=0; is<4 && !f; is++)
-            f |= (ic == ((solved >> ((3 - is) << 2)) & 15));
+        if (!(k = (candidate >> ((3 - i) << 2)) & 15)) continue ;
+        for (ti=f=0; ti<4; ti++)
+            if ((f = (k == ((solved >> ((3 - ti) << 2)) & 15)))) break ;
         if (!f) continue ;
         for (j=0; j<4; j++)
         {
             if (i==j) continue ;
-            jc = (candidate >> ((3 - j) << 2)) & 15;
-            if (!jc) continue ;
-            for (js=f=0; js<4 && !f; js++)
-                f |= (jc == ((solved >> ((3 - js) << 2)) & 15));
+            if (!(k = (candidate >> ((3 - j) << 2)) & 15)) continue ;
+            for (tj=f=0; tj<4; tj++)
+                if ((f = (k == ((solved >> ((3 - tj) << 2)) & 15)))) break ;
             if (!f) continue ;
-            counts[i] += ((i > j) && (is < js));
-            counts[i] += ((i < j) && (is > js));
+            counts[i] += ((i > j) && (ti < tj));
+            counts[i] += ((i < j) && (ti > tj));
         }
     }
     for (i=k=0; i<4; i++)
         k = counts[i] > k ? counts[i] : k;
-    if (!k) return (retval << 1);
+    if (!k) return (res << 1);
     for (i=0; i<4; i++)
         if (counts[i] == k) break;
     candidate &= ~(15 << ((3 - i) << 2));
-    return count_conflicts(candidate, solved, ++retval);
+    return count_conflicts(candidate, solved, ++res);
 }
 
 static int linear_conflicts(uint64_t x)
@@ -46,10 +44,8 @@ static int linear_conflicts(uint64_t x)
         res += count_conflicts(c, s, 0);
         for (j=c=s=0; j<4; j++)
         {
-            c <<= 4;
-            c |= ((x >> (60 - ((i + (j << 2) ) << 2))) & 15);
-            s <<= 4;
-            s |= ((GOAL_STATE >> (60 - ((i + (j << 2)) << 2))) & 15);
+            c = (c << 4) | ((x >> (60 - ((i + (j << 2)) << 2))) & 15);
+            s = (s << 4) | ((GOAL_STATE >> (60 - ((i + (j << 2)) << 2))) & 15);
         }
         res += count_conflicts(c, s, 0);
     }
