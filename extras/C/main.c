@@ -48,9 +48,11 @@ int main(int ac, char **av)
                 continue ;
             if ((moves[i]->is_open) && (moves[i]->g <= tentative_g))
                 continue ;
+            if (!tmp)
+                moves[i]->h = heuristic(moves[i]->puzzle);
             moves[i]->is_open = 1;
             moves[i]->g = tentative_g;
-            moves[i]->h = heuristic(moves[i]->puzzle);
+            moves[i]->parent = v->puzzle;
             ht_insert(ht, moves[i]);
             pq_insert(pq, moves[i]);
         }
