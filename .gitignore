@@ -1,3 +1,5 @@
+extras/C/15puzzle
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
